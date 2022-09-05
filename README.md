@@ -1,5 +1,16 @@
 # esp32_micropython_universal_digital_interface
 
+8-bit computers, microprocesors, RAM, ROM, I/O...
+
+- 8080/Z80
+-- **Altair 8800** (1974)
+-- **MK14** (1977)
+-- ...
+- 6205
+-- 
+
+---
+
 ```
 --- address --- 16-bit (expander OUT - LED, conector)
 
