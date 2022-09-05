@@ -1,17 +1,22 @@
 # esp32_micropython_universal_digital_interface
 
-8-bit computers, microprocesors, RAM, ROM, I/O...
+for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O...
 
-- 8080/Z80
--- **Altair 8800** (1974)
--- **MK14** (1977)
--- ...
-- 6205
--- 
+## 8060/8080/8085/Z80
+- **Altair 8800** (1974)
+- **MK14** (1977)
+- ...
+- 
+## 6205
+- ... 
 
 ---
 
 ```
+--- A16 --->
+--- D8 <--->
+
+
 --- address --- 16-bit (expander OUT - LED, conector)
 
 A00
