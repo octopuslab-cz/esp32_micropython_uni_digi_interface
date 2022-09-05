@@ -1,1 +1,1 @@
-# esp32_micropython_uni_digi_interface
+# esp32_micropython_universal_digital_interface
