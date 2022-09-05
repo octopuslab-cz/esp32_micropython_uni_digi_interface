@@ -1,9 +1,9 @@
 from time import sleep, sleep_ms
 from random import randint
 # from components.i2c_expander import Expander16
-from utils.bits import neg, reverse, int2bin, get_bit, set_bit
+from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
-from universal_digital_interface import i2c_init, num_to_bytes, num_to_hex_str
+from universal_digital_interface import bin_str2int, int2bin_str8, num_to_bytes, num_to_hex_str4, num_to_hex_str2
 
 
 ui = Universal_interface()
@@ -28,7 +28,6 @@ for loop in range(3):
 print("test2")
 print(num_to_bytes(0))
 
-
 for loop in range(5):
     ui.write16(num_to_bytes(0b0000111100001111))
     sleep_ms(300)
@@ -36,7 +35,6 @@ for loop in range(5):
     sleep_ms(300)
     print(loop)    
     
-
 for loop in range(5):
     i = 1
     for loop2 in range(16):
@@ -44,22 +42,31 @@ for loop in range(5):
         ui.i2c.writeto(39, bytes2)
         sleep_ms(50)
         i = i << 1
-        print(loop2, i)
+        print(loop2, i, num_to_hex_str4(i))
 
-
-for loop in range(32):
+for loop3 in range(32):
     i = randint(0,65536)
     bytes2 = num_to_bytes(i)
     ui.i2c.writeto(39, bytes2)
+    print(loop3, num_to_hex_str4(i), i)
     sleep_ms(200)
 
+print("--- test 256 ---")
+for i in range(2**8): # 256
+    bytes2 = num_to_bytes(i)
+    ui.write16(bytes2)    
+    bin_str = int2bin_str8(i)
+    print(num_to_hex_str2(i), int2bin_str8(i), int2bin_str8(reverse(i)), bin_str2int(bin_str)) # num_to_bytes(i,rev=False))
+    sleep_ms(10)
 
+
+sleep(2)
+print("--- test 64k ---")
 for i in range(2**16): # 65536
     bytes2 = num_to_bytes(i)
     ui.write16(bytes2)
     
     # max speed / "REM"
-    hex_str = num_to_hex_str(i)
-    print(i, hex(i), hex_str, num_to_bytes(i,rev=False))
+    # num_to_hex_str(i) # hex(int("0xaa"))
+    print(i, num_to_hex_str4(i), num_to_bytes(i,rev=False))
     # sleep_ms(1000)
-

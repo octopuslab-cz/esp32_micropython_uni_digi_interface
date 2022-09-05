@@ -81,6 +81,20 @@ def int2exp_1byte(i):
     return tmp
 
 
+def int2bin_str8(i):
+    # bin8_str = bin(num)[2:]
+    return f"{i:08b}"
+
+
+def int2bin_str16(i):
+    return f"{i:16b}"
+
+
+def bin_str2int(s):
+    bs = "0b"+s
+    return(int(bs))
+
+
 @micropython.native
 #@micropython.viper
 def num_to_bytes(i,rev=PORT_REVERSE):
@@ -96,6 +110,11 @@ def num_to_bytes(i,rev=PORT_REVERSE):
     return tmp
 
 
-def num_to_hex_str(i):
-    hex_str = str(hex(i))[2:]
-    return hex_str
+def num_to_hex_str4(i):
+    # hex_str = str(hex(i))[2:]
+    return f"{i:04x}"
+
+
+def num_to_hex_str2(i): 
+    # data 8bit / 1 byte / XX
+    return f"{i:02x}"
