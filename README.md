@@ -1,6 +1,6 @@
 # esp32_micropython_universal_digital_interface
 
-for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O...
+for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O ports...
 
 ## 8060/8080/8085/Z80 (intel/Zilog)
 - **Altair 8800** (1974)
