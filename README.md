@@ -2,12 +2,12 @@
 
 for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O...
 
-## 8060/8080/8085/Z80
+## 8060/8080/8085/Z80 (intel/Zilog)
 - **Altair 8800** (1974)
 - **MK14** (1977)
 - ...
 - 
-## 6205
+## 6205 (Motorola)
 - ... 
 
 ---
