@@ -8,6 +8,13 @@ from universal_digital_interface import bin_str2int, int2bin_str8, num_to_bytes,
 
 ui = Universal_interface()
 
+DISPLAY7 = True
+    
+if DISPLAY7:
+    from utils.octopus import disp7_init
+    d7 = disp7_init()
+
+
 #i2c = i2c_init()
 #print("init exp16")
 #exp16 = Expander16(39)
@@ -33,7 +40,8 @@ for loop in range(5):
     sleep_ms(300)
     ui.write16(num_to_bytes(0b1111000011110000))
     sleep_ms(300)
-    print(loop)    
+    print(loop)
+
     
 for loop in range(5):
     i = 1
@@ -44,6 +52,7 @@ for loop in range(5):
         i = i << 1
         print(loop2, i, num_to_hex_str4(i))
 
+
 for loop3 in range(32):
     i = randint(0,65536)
     bytes2 = num_to_bytes(i)
@@ -51,7 +60,8 @@ for loop3 in range(32):
     print(loop3, num_to_hex_str4(i), i)
     sleep_ms(200)
 
-print("--- test 256 ---")
+
+print("--- test 256 --- loop")
 for i in range(2**8): # 256
     bytes2 = num_to_bytes(i)
     ui.write16(bytes2)    
@@ -61,12 +71,16 @@ for i in range(2**8): # 256
 
 
 sleep(2)
-print("--- test 64k ---")
+print("--- test 64k --- and read data8")
 for i in range(2**16): # 65536
     bytes2 = num_to_bytes(i)
     ui.write16(bytes2)
+    data8 = num_to_hex_str2(ui.read16d()[1])
     
     # max speed / "REM"
     # num_to_hex_str(i) # hex(int("0xaa"))
-    print(i, num_to_hex_str4(i), num_to_bytes(i,rev=False))
+    print(i, num_to_hex_str4(i), data8, num_to_bytes(i,rev=False))
     # sleep_ms(1000)
+    if DISPLAY7:
+        d7.show(num_to_hex_str4(i)+"  "+data8)
+    sleep(0.3)

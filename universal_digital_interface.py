@@ -1,5 +1,5 @@
 # octopusLAB - universal digital interface for microprocesor / EEPROM / Etc.
-__version__ = "0.1 (5.9.22)" #
+__version__ = "0.2 (6.9.22)" #
 
 from machine import Pin, I2C
 from time import sleep, sleep_ms
@@ -27,8 +27,7 @@ b[0] = 255 # int    # bytearray(b'\xff\x00')
 str(hex(b[0]))[2:]  # "ff"
 
 b = b'abc'
-b.decode()
-
+b.decode('utf-8')
 """
 
 # -------------------------------
@@ -43,7 +42,8 @@ class Universal_interface:
         
         # ===== expander address =====
         self.ADDR08 = const(55)  # 555
-        self.ADDR16 = const(39)  # 000
+        self.ADDR16 = const(39)  # 000 addr
+        self.ADDR16d = const(38) # 001 data
         
     
     def set_temp1(self, value):  self.temp1 = value
@@ -52,9 +52,15 @@ class Universal_interface:
     def write16(self,bytes2):
         self.i2c.writeto(self.ADDR16, bytes2)
         
+        
     def read16(self):
         #self.i2c.writeto(self.ADDR16, bytes2)
         bytes2 = None
+        return bytes2
+    
+    
+    def read16d(self):
+        bytes2 = self.i2c.readfrom(self.ADDR16d,2) # bus size 16 bits = 2 Bytes
         return bytes2
     
 
@@ -100,10 +106,10 @@ def bin_str2int(s):
 def num_to_bytes(i,rev=PORT_REVERSE):
     tmp = bytearray(16 // 8) # 2
     if rev:
-        if i > 256: tmp[0] = reverse(i // 256)     
+        if i >= 256: tmp[0] = reverse(i // 256)     
         a = reverse(i+256)
     else:
-        if i > 256: tmp[0] = i // 256    
+        if i >= 256: tmp[0] = i // 256    
         a = i+256
         
     tmp[1] = a
