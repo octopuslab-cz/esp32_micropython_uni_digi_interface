@@ -172,12 +172,16 @@ while terminal_run:
         addr = int(cmd1)
         
         for r in range(16):
-            print()
+            #print()
             print(num_to_hex_str4(addr+r*16), end="")
         
+            ch16 =""
             for i in range(16):
                 data8 = num_to_hex_str2(vM[addr+r*16+i])
                 print(" ", data8, end="")
+                ch16 += chr(vM[addr+r*16+i])
+                
+            print("  '" + ch16 + "'")
 
      
     if cmd0.upper() == "CV": # copy to virtual
@@ -216,7 +220,7 @@ while terminal_run:
         print("read:", num_to_hex_str4(addr), data8)
         
     # ------------------- hex file ---- test only 256 B
-    if cmd0.upper() == "SAVE": # todo: subdir /data
+    if cmd0.upper() == "SAVE": # subdir /data
         file = cmd1
         if len(file)<3:
             file = "test.hex"
@@ -238,7 +242,7 @@ while terminal_run:
         f = open("data/" + file)
         fs = f.read()
         f.close()
-        for i in range(128):
+        for i in range(256):
             b8 = fs[i*2:i*2+2]
             # print(i, b8, int("0x"+b8))
             vM[i]=int("0x"+b8)
