@@ -84,3 +84,27 @@ UDI Monitor 0.2 OctopusLAB 2016-22
 0070  ff  3d  fd  e7  fb  13  f1  0b  e3  fb  01  f3  e3  5f  73  6b
 
 ```
+
+---
+
+## Inspitation and lins
+
+
+https://github.com/GodTamIt/assembler
+
+https://github.com/ept221/8085-Assembler
+
+https://github.com/simonowen/pyz80
+
+https://github.com/cburbridge/z80
+
+https://github.com/dj-on-github/py6502
+
+https://github.com/parasj/python-assembler
+
+
+
+
+
+
+
