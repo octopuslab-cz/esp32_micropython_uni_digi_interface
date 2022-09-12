@@ -8,7 +8,7 @@ ver = "0.3" # basic - beta
 from time import sleep, sleep_ms
 from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
-from universal_digital_interface import bin_str2int, int2bin_str8, num_to_bytes, num_to_hex_str4, num_to_hex_str2
+from universal_digital_interface import bin_str_to_int, int_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from mini_terminal import terminal_info, terminal_color, terminal_clear
 from gc import mem_free
 
@@ -38,6 +38,11 @@ ui.write16(bytes2)
 data8 = num_to_hex_str2(ui.read16d()[1])
     
 print(i, num_to_hex_str4(i), data8, num_to_bytes(i,rev=False))
+
+
+
+
+
 """
 
 
@@ -100,7 +105,18 @@ def print_help():
     print("              save filename.hex") # 256 B from virtual memory
     print("              load filename.hex") # 256 B to virtual memory
     print("-"*39)
-    
+
+
+def print_ascii_table():
+    print("----- basic ASCII table: 32-127 -----")
+    for j in range(16):
+        print()
+        for i in range(6):
+            x = 32+j+i*16
+            dd = ""
+            if x > 95 and x < 100: dd = " "
+            print(dd+str(x), num_to_hex_str2(x), chr(x), " ", end="")
+
 
 # init vM  |  max size (for test) only 512 B
 for i in range(512):
@@ -125,16 +141,7 @@ while terminal_run:
     cmd0, cmd1, cmd2 = parse_input(input_str)
     if DEBUG: print(cmd0, cmd1, cmd2)
     
-    if cmd0 == "A":
-        print("----- basic ASCII table: 32-127 -----")
-        for j in range(16):
-            print()
-            for i in range(6):
-                x = 32+j+i*16
-                dd = ""
-                if x > 95 and x < 100: dd = " "
-                print(dd+str(x), num_to_hex_str2(x), chr(x), " ", end="")
-    
+    if cmd0 == "A": print_ascii_table()
     if cmd0 == "Q": terminal_run = False
     if cmd0 == "H": print_help()
     if cmd0 == "L": terminal_clear()

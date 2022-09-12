@@ -6,6 +6,23 @@ from time import sleep, sleep_ms
 from micropython import const
 from utils.bits import neg, reverse, int2bin, get_bit, set_bit
 
+"""
+>>> num_to_hex_str4(1325)
+'052d'
+
+>>> int_to_bin_str8(22)
+'00010110'
+
+>>> bin_str_to_int("1010101")
+85
+
+>>> num_to_bytes2(255)
+bytearray(b'\x00\xff')
+
+>>> num_to_bytes2(0b1111111111111111)
+bytearray(b'\xff\xff')
+
+"""
 
 PORT_REVERSE = True
 
@@ -74,7 +91,7 @@ def i2c_init(HW_or_SW=0,freq=300000): # 2000000 ok
     return i2c
 
 
-def int2exp_1byte(i):
+def int_to_exp_1byte(i): # expander
     tmp = bytearray(2)    
     #b = str(hex(reverse(i)))[1:]
     #print(f'{(1):02d}')    
@@ -87,23 +104,23 @@ def int2exp_1byte(i):
     return tmp
 
 
-def int2bin_str8(i):
+def int_to_bin_str8(i):
     # bin8_str = bin(num)[2:]
     return f"{i:08b}"
 
 
-def int2bin_str16(i):
+def int_to_bin_str16(i):
     return f"{i:16b}"
 
 
-def bin_str2int(s):
+def bin_str_to_int(s):
     bs = "0b"+s
     return(int(bs))
 
 
 @micropython.native
 #@micropython.viper
-def num_to_bytes(i,rev=PORT_REVERSE):
+def num_to_bytes2(i,rev=PORT_REVERSE):
     tmp = bytearray(16 // 8) # 2
     if rev:
         if i >= 256: tmp[0] = reverse(i // 256)     
