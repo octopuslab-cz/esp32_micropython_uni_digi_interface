@@ -10,11 +10,15 @@ from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
 from universal_digital_interface import bin_str2int, int2bin_str8, num_to_bytes, num_to_hex_str4, num_to_hex_str2
 from mini_terminal import terminal_info, terminal_color, terminal_clear
+from gc import mem_free
 
 ui = Universal_interface()
 
 vM = []     # 512 B virual memory
 vMtemp = [] # 256 B virual memory - temporary
+
+VM_SIZE = 256
+VM_TEMP_SIZE = 128
 
 """    # i2c expanders:
 #ui.write16(b'\xFF\xFF')
@@ -123,7 +127,10 @@ while terminal_run:
         print("--- info ---")
         print(f"UDI Monitor - version {ver} ")
         print("ESP32 | Micropython")
-        
+        print(f"--> RAM free {mem_free()}")
+        print(f"--> VM_SIZE {VM_SIZE} (virtual memory)")
+        print(f"--> VM_TEMP_SIZE {VM_TEMP_SIZE}")
+        VM_TEMP_SIZE
         print("emul.procesor:", PROCESOR)
         
     if cmd0.upper() == "P": PROCESOR = cmd1
@@ -144,7 +151,7 @@ while terminal_run:
     if cmd0 == "D":
         addr = int(cmd1)
         
-        for r in range(8):
+        for r in range(16):
             print()
             print(num_to_hex_str4(addr+r*16), end="")
         
@@ -164,7 +171,7 @@ while terminal_run:
     if cmd0.upper() == "DV":
         addr = int(cmd1)
         
-        for r in range(8):
+        for r in range(16):
             print()
             print(num_to_hex_str4(addr+r*16), end="")
         
@@ -176,7 +183,7 @@ while terminal_run:
     if cmd0.upper() == "CV": # copy to virtual
         addr = int(cmd1)
         
-        for r in range(8):
+        for r in range(16): # 16 * 16 = 256
             print()
             print(num_to_hex_str4(addr+r*16), end="")
         
@@ -218,7 +225,7 @@ while terminal_run:
         for i in range(256):
             str_temp += num_to_hex_str2(vM[i])
             
-        f = open(file, 'w')
+        f = open("data/" + file, 'w')
         f.write(str_temp)
         f.close()
         
@@ -228,7 +235,7 @@ while terminal_run:
         if len(file)<3: 
             file = "test.hex"
             
-        f = open(file)
+        f = open("data/" + file)
         fs = f.read()
         f.close()
         for i in range(128):
