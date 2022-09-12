@@ -13,8 +13,8 @@ from mini_terminal import terminal_info, terminal_color, terminal_clear
 
 ui = Universal_interface()
 
-vM = [] # virual memory
-
+vM = []     # 512 B virual memory
+vMtemp = [] # 256 B virual memory - temporary
 
 """    # i2c expanders:
 #ui.write16(b'\xFF\xFF')
@@ -86,7 +86,9 @@ def print_help():
     print(" Read         R <address>")
     print(" Write        W <address> <data>")
     print(" Quit         Q")
-   
+    print("-"*39)
+    print("              save filename.hex") # 256 B from virtual memory
+    print("              load filename.hex") # 256 B to virtual memory
     print("-"*39)
     
 
@@ -94,6 +96,8 @@ def print_help():
 for i in range(512):
     vM.append(0)
 
+for i in range(256):
+    vMtemp.append(0)
 
 # ===========================================
 while terminal_run:
@@ -122,9 +126,9 @@ while terminal_run:
         
         print("emul.procesor:", PROCESOR)
         
-    if cmd0.upper() == "P":
-        PROCESOR = cmd1
-    
+    if cmd0.upper() == "P": PROCESOR = cmd1
+
+
     if cmd0.upper() == "R":
         addr = int(cmd1)
         
@@ -133,6 +137,8 @@ while terminal_run:
         # data =  num_to_hex_str4(addr)
         data8 = num_to_hex_str2(ui.read16d()[1])
         print("read:", num_to_hex_str4(addr), data8)
+        if DISPLAY7:
+            d7.show(num_to_hex_str4(addr)+"  "+data8)
         
 
     if cmd0 == "D":
@@ -201,3 +207,33 @@ while terminal_run:
         data_num = vM[addr]
         data8 = num_to_hex_str2(data_num)
         print("read:", num_to_hex_str4(addr), data8)
+        
+    # ------------------- hex file ---- test only 256 B
+    if cmd0.upper() == "SAVE": # todo: subdir /data
+        file = cmd1
+        if len(file)<3:
+            file = "test.hex"
+          
+        str_temp =""
+        for i in range(256):
+            str_temp += num_to_hex_str2(vM[i])
+            
+        f = open(file, 'w')
+        f.write(str_temp)
+        f.close()
+        
+  
+    if cmd0.upper() == "LOAD": # todo: if file dont exist
+        file = cmd1
+        if len(file)<3: 
+            file = "test.hex"
+            
+        f = open(file)
+        fs = f.read()
+        f.close()
+        for i in range(128):
+            b8 = fs[i*2:i*2+2]
+            # print(i, b8, int("0x"+b8))
+            vM[i]=int("0x"+b8)
+        
+        # print(fs)
