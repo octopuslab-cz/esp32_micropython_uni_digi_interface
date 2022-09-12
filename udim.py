@@ -47,7 +47,7 @@ DISPLAY7 = True
 terminal_run = True
 PROCESOR = "Z80"
 machine_code = () # table
-    
+address = 0   
     
 if DISPLAY7:
     from utils.octopus import disp7_init
@@ -79,6 +79,7 @@ def print_help():
     print(" Universal Digital Interface - Monitor")
     print(" HELP")
     print("-"*39)
+    print(" ASCII table  A")
     print(" Copy         C <start> <end> <dest>")
     print(" Dump         D <start>")
     print(" Go           G <address>")
@@ -91,6 +92,11 @@ def print_help():
     print(" Write        W <address> <data>")
     print(" Quit         Q")
     print("-"*39)
+    print(" Dump VM      DV <start> (Virtual memory)")
+    print(" Read VM      RV <address>")
+    print(" Write VM     WV <address> <data>")
+    print(" Write next   WN <data> (address+1)")
+    print("-"*39)    
     print("              save filename.hex") # 256 B from virtual memory
     print("              load filename.hex") # 256 B to virtual memory
     print("-"*39)
@@ -119,6 +125,16 @@ while terminal_run:
     cmd0, cmd1, cmd2 = parse_input(input_str)
     if DEBUG: print(cmd0, cmd1, cmd2)
     
+    if cmd0 == "A":
+        print("----- basic ASCII table: 32-127 -----")
+        for j in range(16):
+            print()
+            for i in range(6):
+                x = 32+j+i*16
+                dd = ""
+                if x > 95 and x < 100: dd = " "
+                print(dd+str(x), num_to_hex_str2(x), chr(x), " ", end="")
+    
     if cmd0 == "Q": terminal_run = False
     if cmd0 == "H": print_help()
     if cmd0 == "L": terminal_clear()
@@ -132,6 +148,7 @@ while terminal_run:
         print(f"--> VM_TEMP_SIZE {VM_TEMP_SIZE}")
         VM_TEMP_SIZE
         print("emul.procesor:", PROCESOR)
+        print("address:", address)
         
     if cmd0.upper() == "P": PROCESOR = cmd1
 
@@ -201,13 +218,25 @@ while terminal_run:
                 
                 
     if cmd0.upper() == "WV": # write byte to virtual
-        addr = int(cmd1)  # int or hexa: wv 256 d / ww 0xFF          
+        addr = int(cmd1)  # int or hexa: wv 256 d / ww 0xFF
+        address = addr
         data = cmd2       # hexa string DD: FF = 0xFF = 256 
         
         try:
             data_num = int("0x"+data)
             print("write:", addr, data_num)
             vM[addr] = data_num
+        except:
+            data = "ERR: input hexa data 00/ab/FF"
+            
+    if cmd0.upper() == "WN": # write byte to virtual to next addres
+        address += 1
+        data = cmd1       # hexa string DD: FF = 0xFF = 256 
+        
+        try:
+            data_num = int("0x"+data)
+            print("write:", address, data_num)
+            vM[address] = data_num
         except:
             data = "ERR: input hexa data 00/ab/FF"
             
