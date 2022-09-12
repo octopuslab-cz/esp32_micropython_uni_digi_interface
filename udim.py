@@ -12,7 +12,7 @@ from mini_terminal import terminal_info, terminal_color, terminal_clear
 
 ui = Universal_interface()
 
-vROM = [] # virual ROM
+vM = [] # virual memory
 
 
 # -------------------------------------
@@ -39,7 +39,12 @@ def print_help():
     
     print("-"*39)
     
- 
+
+# init vM   ------------------ max size (for test) only 512 B
+for i in range(512):
+    vM.append(0)
+
+
 # =======================================================
 while True:
     terminal_clear()
@@ -74,7 +79,10 @@ while True:
         
 
     if cmd0.upper() == "D":
-        addr = int(cmd[1])
+        try:
+            addr = int(cmd[1])
+        except:
+            addr = 0
         
         for r in range(8):
             print()
@@ -85,7 +93,66 @@ while True:
                 ui.i2c.writeto(39, bytes2)
                 data8 = num_to_hex_str2(ui.read16d()[1])
                 print(" ", data8, end="")
+
+     
+    # --------------- virtual memory
+    if cmd0.upper() == "ZV": # reset vM to ZERO
+        for i in range(256):
+            vM[i] = 0
             
+            
+    if cmd0.upper() == "DV":
+        try:
+            addr = int(cmd[1])
+        except:
+            addr = 0
+        
+        for r in range(8):
+            print()
+            print(num_to_hex_str4(addr+r*16), end="")
+        
+            for i in range(16):
+                data8 = num_to_hex_str2(vM[addr+r*16+i])
+                print(" ", data8, end="")
+
+     
+    if cmd0.upper() == "CV": # copy to virtual
+        try:
+            addr = int(cmd[1])
+        except:
+            addr = 0
+        
+        for r in range(8):
+            print()
+            print(num_to_hex_str4(addr+r*16), end="")
+        
+            for i in range(16):
+                bytes2 = num_to_bytes(addr+r*16+i)
+                ui.i2c.writeto(39, bytes2)
+                data_num = ui.read16d()[1]
+                data8 = num_to_hex_str2(data_num)
+                vM[addr+r*16+i] = data_num
+                print(" ", data8, end="")
+                
+                
+    if cmd0.upper() == "WV": # write byte to virtual
+        try:
+            addr = int(cmd[1])
+        except:
+            addr = 0
+            
+        try:
+            data = cmd[2]
+        except:
+            data = "00"
+        
+        try:
+            data_num = int("0x"+data)
+            print("write", addr, data_num)
+            vM[addr] = data_num
+        except:
+            data = "ERR: input hexa data 00/ab/FF"
+      
             
                 
 """
