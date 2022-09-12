@@ -1,4 +1,4 @@
-# octopusLAB UDI
+# octopusLAB UDI-22
 
 (esp32_micropython_universal_digital_interface)
 
