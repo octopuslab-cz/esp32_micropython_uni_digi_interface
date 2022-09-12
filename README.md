@@ -4,13 +4,18 @@
 
 for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O ports...
 
-## 8060/8080/8085/Z80 (intel/Zilog)
+## 4-bit (Intel 4004 - 1970) version
+
+https://github.com/octopuslab-cz/micropython_4004-emul
+
+
+## 8-bit: 8008/8060/8080/8085/Z80 (intel/Zilog)
 - Univac 8008 (1972)
 - **Altair 8800** (1974)
 - **MK14** (1977)
 - ...
 - 
-## 6502 (Motorola)
+## 8-bit: 6502 (Motorola)
 - MOS Kim 1 - 6502 (1976)
 - Apple 1 - 6502, 2/4kB (1976) 
 - Atari 400/800 - 6502, 4/8kB (1979)
