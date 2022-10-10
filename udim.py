@@ -1,6 +1,6 @@
 """
 Universal Digital Interface - Monitor
-(c) 2016-22 OctopusLab
+(c) 2016-22 OctopusLab 2022/10/10
 
 """
 ver = "0.3" # basic - beta
@@ -8,7 +8,8 @@ ver = "0.3" # basic - beta
 from time import sleep, sleep_ms
 from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
-from universal_digital_interface import bin_str_to_int, int_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
+from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
+from octopus_digital import bin_str_to_int, hex_dump
 from mini_terminal import terminal_info, terminal_color, terminal_clear
 from gc import mem_free
 
@@ -38,10 +39,6 @@ ui.write16(bytes2)
 data8 = num_to_hex_str2(ui.read16d()[1])
     
 print(i, num_to_hex_str4(i), data8, num_to_bytes(i,rev=False))
-
-
-
-
 
 """
 
@@ -119,7 +116,7 @@ def print_ascii_table():
 
 
 # init vM  |  max size (for test) only 512 B
-for i in range(512):
+for i in range(256):
     vM.append(0)
 
 for i in range(256):
@@ -163,7 +160,7 @@ while terminal_run:
     if cmd0.upper() == "R":
         addr = int(cmd1)
         
-        bytes2 = num_to_bytes(addr)
+        bytes2 = num_to_bytes2(addr)
         ui.i2c.writeto(39, bytes2)
         # data =  num_to_hex_str4(addr)
         data8 = num_to_hex_str2(ui.read16d()[1])
@@ -180,7 +177,7 @@ while terminal_run:
             print(num_to_hex_str4(addr+r*16), end="")
         
             for i in range(16):
-                bytes2 = num_to_bytes(addr+r*16+i)
+                bytes2 = num_to_bytes2(addr+r*16+i)
                 ui.i2c.writeto(39, bytes2)
                 data8 = num_to_hex_str2(ui.read16d()[1])
                 print(" ", data8, end="")
@@ -195,18 +192,7 @@ while terminal_run:
     if cmd0.upper() == "DV":
         addr = int(cmd1)
         
-        for r in range(16):
-            #print()
-            print(num_to_hex_str4(addr+r*16), end="")
-        
-            ch16 =""
-            for i in range(16):
-                data8 = num_to_hex_str2(vM[addr+r*16+i])
-                print(" ", data8, end="")
-                ch16 += chr(vM[addr+r*16+i])
-                
-            print("  '" + ch16 + "'")
-
+        hex_dump(vM)
      
     if cmd0.upper() == "CV": # copy to virtual
         addr = int(cmd1)
@@ -216,7 +202,7 @@ while terminal_run:
             print(num_to_hex_str4(addr+r*16), end="")
         
             for i in range(16):
-                bytes2 = num_to_bytes(addr+r*16+i)
+                bytes2 = num_to_bytes2(addr+r*16+i)
                 ui.i2c.writeto(39, bytes2)
                 data_num = ui.read16d()[1]
                 data8 = num_to_hex_str2(data_num)

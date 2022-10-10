@@ -97,3 +97,17 @@ def num_to_hex_str4(i):
 def num_to_hex_str2(i): 
     # data 8bit / 1 byte / XX
     return f"{i:02x}"
+
+def hex_dump(byte_arr,row=16,addr=0,show_ascii=True):
+    for r in range(row):
+            #print()
+            print(num_to_hex_str4(addr+r*16), end="")
+        
+            ch16 =""
+            for i in range(16):
+                data8 = byte_arr[addr+r*16+i]
+                ch16 += chr(data8)
+                print(" ", num_to_hex_str2(data8), end="")
+                              
+            if show_ascii: print("  '" + ch16 + "'")
+            else: print()

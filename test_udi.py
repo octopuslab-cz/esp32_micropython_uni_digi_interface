@@ -3,7 +3,7 @@ from random import randint
 # from components.i2c_expander import Expander16
 from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
-from universal_digital_interface import bin_str_to_int, int_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
+from octopus_digilab import bin_str_to_int, num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 
 
 ui = Universal_interface()
@@ -65,8 +65,8 @@ print("--- test 256 --- loop")
 for i in range(2**8): # 256
     bytes2 = num_to_bytes2(i)
     ui.write16(bytes2)    
-    bin_str = int_to_bin_str8(i)
-    print(num_to_hex_str2(i), int_to_bin_str8(i), int_to_bin_str8(reverse(i)), bin_str_to_int(bin_str)) # num_to_bytes(i,rev=False))
+    bin_str = num_to_bin_str8(i)
+    print(num_to_hex_str2(i), num_to_bin_str8(i), num_to_bin_str8(reverse(i)), bin_str_to_int(bin_str)) # num_to_bytes(i,rev=False))
     sleep_ms(10)
 
 
