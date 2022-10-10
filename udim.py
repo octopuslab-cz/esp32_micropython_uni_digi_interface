@@ -9,7 +9,7 @@ from time import sleep, sleep_ms
 from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
-from octopus_digital import bin_str_to_int, hex_dump
+from octopus_digital import bin_str_to_int, hex_dump, ascii_table
 from mini_terminal import terminal_info, terminal_color, terminal_clear
 from gc import mem_free
 
@@ -105,14 +105,7 @@ def print_help():
 
 
 def print_ascii_table():
-    print("----- basic ASCII table: 32-127 -----")
-    for j in range(16):
-        print()
-        for i in range(6):
-            x = 32+j+i*16
-            dd = ""
-            if x > 95 and x < 100: dd = " "
-            print(dd+str(x), num_to_hex_str2(x), chr(x), " ", end="")
+    ascii_table(1)
 
 
 # init vM  |  max size (for test) only 512 B

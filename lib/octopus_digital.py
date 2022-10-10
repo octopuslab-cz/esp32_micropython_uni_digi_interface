@@ -47,6 +47,17 @@ def char_to_hex(ch):
     return hex(ord(ch))
 
 
+def ascii_table(ver=1,start=16):
+    print("----- basic ASCII table: 32-127 -----")
+    for j in range(16):
+        print()
+        for i in range(6):
+            x = 32+j+i*16
+            dd = ""
+            if x > 95 and x < 100: dd = " "
+            print(dd+str(x), num_to_hex_str2(x), chr(x), " ", end="")
+
+
 def num_to_exp_byte(i): # 1 byte > expander
     tmp = bytearray(2)    
     #b = str(hex(reverse(i)))[1:]
@@ -111,3 +122,62 @@ def hex_dump(byte_arr,row=16,addr=0,show_ascii=True):
                               
             if show_ascii: print("  '" + ch16 + "'")
             else: print()
+            
+# simple xor "cipher"
+
+def xor(data, key): 
+    return bytearray(a^b for a, b in zip(*map(bytearray, [data, key])))
+
+
+def set_num_key(namespace, key, value):
+    storage = NVS(namespace) 
+    storage.set_i32(key, value)
+    storage.commit()
+    
+    
+def get_num_key(namespace, key):
+    storage = NVS(namespace) 
+    return storage.get_i32(key)
+    
+
+def set_key(namespace, key, value):
+    storage = NVS(namespace) 
+    storage.set_blob(key, value)
+    storage.commit()
+
+
+def get_key(namespace, key):
+    #  buffer = bytearray(len(b"binary_data"))
+    buffer = bytearray(32)
+    storage = NVS(namespace) 
+    return storage.get_blob(key,buffer)
+
+
+"""
+# --- /init ---
+NAMESPACE = octopuslab22
+
+print("read key from storage")
+my_num_key = get_num_key(NAMESPACE,"secret_num_key")
+print("my_num_key:",my_num_key)
+secret_key = str(my_num_key)*3 
+
+
+#my_key = get_key(NAMESPACE,"secret_key")
+#print("my_key:",my_key)
+
+
+plaintext =  'unencrypted123 abc' 
+ciphertext = xor(plaintext, secret_key)
+print("plaintext:",plaintext)
+print("encrypted:",ciphertext)
+
+
+decrypted = xor(ciphertext, secret_key) 
+print("decrypted",decrypted)
+str_decrypt = decrypted.decode("utf-8")
+print("str(decrypted):",str_decrypt)
+
+
+print("compare:", plaintext == str_decrypt)
+"""
