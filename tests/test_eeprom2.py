@@ -76,15 +76,14 @@ def eeprom_write_string1(s2w):
 
  
 def eeprom_write_string(s2w):
-    i=0
+    addr=0
     for s in s2w:
-        addr = i
         # data = bytearray([ord(s)]) # bytearray([30+i*2])
         # eeprom_write(addr, data)
         data = ord(s) # byte > int!
         eeprom.write_byte(addr, data)
         print(addr,data,s)
-        i += 1
+        addr += 1
 
 
 
@@ -94,7 +93,6 @@ addr = 0
 test_data = eeprom.read_byte(addr)
 print(test_data0, test_data)
 sleep(0.5)
-
 
 
 """
@@ -122,16 +120,6 @@ print("test eeprom_write_string")
 s2w = "pátý poslední test? - class -567" # string to write // s2w
 #eeprom_write_string(s2w)
 
-
-
-"""
-print("test read 32")
-#i2c.writeto_mem(EEPROM_ADDR, 0x00, new_data0)
-for i in range(32):
-    addr = i
-    data =  eeprom_read(addr)
-    print(addr,data)
-"""   
 
 
 print("> eeprom class - test eeprom256")

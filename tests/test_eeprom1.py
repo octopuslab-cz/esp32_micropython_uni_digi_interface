@@ -54,7 +54,7 @@ def eeprom_read_256():
         # data_256[i] = byte
         a = 0
         for byte in data:
-            print(i*8+a,hex(byte))
+            ##print(i*8+a,hex(byte))
             data_256[i*8+a] = byte
             a += 1
         
@@ -104,10 +104,8 @@ eeprom_write_string1(s2w)
 
 print("test read 32")
 #i2c.writeto_mem(EEPROM_ADDR, 0x00, new_data0)
-for i in range(32):
-    addr = i
-    data =  eeprom_read(addr)
-    print(addr,data)
+for addr in range(32):
+    print(addr,eeprom_read(addr))
 
 print("> eeprom_read_256()")
 eeprom_read_256()
