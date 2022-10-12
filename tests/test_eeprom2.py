@@ -39,33 +39,16 @@ self._bmp_i2c.writeto_mem(self._bmp_addr, 0xF4, bytearray([0x2E]))
 
 """
 
-def eeprom_write(addr, data):
-    i2c.writeto_mem(EEPROM_ADDR, addr, data)
-    sleep_ms(10)
-
-
-def eeprom_read(addr):
-    data = i2c.readfrom_mem(EEPROM_ADDR, addr, 1)
-    return data
-
-
-def eeprom_read_block(addr, num=8):
-    data = i2c.readfrom_mem(EEPROM_ADDR, addr, num)
-    return data
-
-def eeprom_read_256old():
+def eeprom_read_256_1(num=64): # per 1 Byte
     global data_256
-    for i in range(16): # 8*8=64 // 16*8=128 //
-        ### data = i2c.readfrom_mem(EEPROM_ADDR, i*8, 8)
-        data = eeprom_read_block(i*8,8)
-        # byte =  eeprom_read(i)
-        # data_256[i] = byte
-        a = 0
-        for byte in data:
-            print(i*8+a,hex(byte))
-            data_256[i*8+a] = byte
-            a += 1
-  
+    byte = bytearray(1)
+    for i in range(num): # 8*8=64 // 16*8=128 //
+        byte = eeprom.read_byte(i)
+        # print(i,byte,chr(int(hex(byte))))
+        ##print(i,byte)
+        #data_256[i] = int(hex(byte))
+        data_256[i] = byte[0]
+
   
 def eeprom_read_256():
     global data_256
@@ -77,9 +60,10 @@ def eeprom_read_256():
         # data_256[i] = byte
         a = 0
         for byte in data:
-            print(i*8+a,hex(byte),chr(int(hex(byte))))
+            ## print(i*8+a,hex(byte),chr(int(hex(byte))))
             data_256[i*8+a] = byte
             a += 1
+
 
 def eeprom_write_string1(s2w):
     i=0
@@ -90,14 +74,6 @@ def eeprom_write_string1(s2w):
         print(addr,data)
         i += 1
 
-def eeprom_read_256_per_1byte(num=64):
-    global data_256
-    for i in range(num): # 8*8=64 // 16*8=128 //
-        byte = eeprom.read_byte(i)
-        # print(i,byte,chr(int(hex(byte))))
-        print(i,byte)
-        data_256[i] = int(hex(byte))
- 
  
 def eeprom_write_string(s2w):
     i=0
@@ -110,12 +86,15 @@ def eeprom_write_string(s2w):
         print(addr,data,s)
         i += 1
 
-"""
+
+
 print("test read")
-test_data = i2c.readfrom_mem(EEPROM_ADDR, 0x00, 2)
-print(test_data)
+test_data0 = i2c.readfrom_mem(EEPROM_ADDR, 0x00, 2)
+addr = 0
+test_data = eeprom.read_byte(addr)
+print(test_data0, test_data)
 sleep(0.5)
-"""
+
 
 
 """
@@ -126,23 +105,23 @@ print(test_data)
 sleep(0.5)
 """
 
-"""
+""" todo x?
 print("test write 32")
 #i2c.writeto_mem(EEPROM_ADDR, 0x00, new_data0)
 for i in range(32):
     addr = i
     data = bytearray([30+i*2])
-    eeprom_write(addr, data)
+    ##eeprom_write(addr, data)
+    eeprom.write_byte(addr, data)
     print(addr,data)
 """
 
-"""
+
 print("test eeprom_write_string")
-#     "01234567890123456789012345678901" //32
-s2w = "druhy test class - zapis retezce" # string to write // s2w
-#i2c.writeto_mem(EEPROM_ADDR, 0x00, new_data0)
-eeprom_write_string(s2w)
-"""
+###   "01234567890123456789012345678901" //32
+s2w = "pátý poslední test? - class -567" # string to write // s2w
+#eeprom_write_string(s2w)
+
 
 
 """
@@ -155,51 +134,15 @@ for i in range(32):
 """   
 
 
-"""
-i = 0 # index  
-for ch in range(48,128):
-    hex_result[i] = ch
-    # print(chr(ch), end="")
-    str_result += chr(ch)
-    # hex2str(hex(chr(ch)))
-    i += 1
-
-print("str_result", str_result)
-print("hex_result", str(hex_result))
-
-
-print("test hex dump")
-s = "abc abc 123456789 ěščřžýááííé .,-*/-"
-
-
-print("-"*30)
-
-for x in str_result:
-    print(x, int(ch2hex(x)), hex2str(ch2hex(x)))
-"""
 print("> eeprom class - test eeprom256")
 for i in range(16):
     print(eeprom.read_byte(i))
 
 
 print("> eeprom_read_256()")
-#ok1#eeprom_read_256old()
-#x??#eeprom_read_256()
-eeprom_read_256_per_1byte()
+#ok2#eeprom_read_256_1()
+eeprom_read_256()
 
 
-print()
 print("> hex_dump")
 hex_dump(data_256, show_ascii=True)
-
-"""
-for r in range(16):
-    print()
-    print(num_to_hex_str4(addr+r*16), end="")
-        
-    for i in range(16):
-        bytes2 = num_to_bytes2(addr+r*16+i)
-        #ui.i2c.writeto(39, bytes2)
-        data8 = hex_to_str(hex(data_256[r*16+i])) #num_to_hex_str2(ui.read16d()[1])
-        print(" ", data8, end="")
-"""
