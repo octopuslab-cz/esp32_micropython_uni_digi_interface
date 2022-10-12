@@ -19,6 +19,23 @@ memory.write_byte(12345, 115)
 read_value = memory.read_byte(12345)
 
 print(read_value)
+
+old tests:
+def eeprom_write(addr, data):
+    i2c.writeto_mem(EEPROM_ADDR, addr, data)
+    sleep_ms(10)
+
+
+def eeprom_read(addr):
+    data = i2c.readfrom_mem(EEPROM_ADDR, addr, 1)
+    return data
+
+
+def eeprom_read_block(addr, num=8):
+    data = i2c.readfrom_mem(EEPROM_ADDR, addr, num)
+    return data
+
+
 """
 
 class EEPROM24x:
@@ -27,10 +44,12 @@ class EEPROM24x:
     def __init__(self, i2c, i2c_address, EEPROM_device):
         # Init with the I2C setting
         self.i2c = i2c
-        self.i2c_address = i2c_address[0]
+        # self.i2c_address = i2c_address[0]
+        self.i2c_address = i2c_address # exactly
 
-        if(EEPROM_device == "24x02"): self._MAX_ADDRESS = 2048
-        elif(EEPROM_device == "24x04"): self._MAX_ADDRESS = 4069
+        if(EEPROM_device == "24x02"):  self._MAX_ADDRESS  = int(2048/8)
+        elif(EEPROM_device == "24x04"): self._MAX_ADDRESS = int(4096/8)
+        elif(EEPROM_device == "24x08"): self._MAX_ADDRESS = int(8192/8)
         elif(EEPROM_device == "24x256"): self._MAX_ADDRESS = 32767
         elif(EEPROM_device == "24x512"): self._MAX_ADDRESS = 65535
         else:
@@ -51,7 +70,7 @@ class EEPROM24x:
         self.i2c.writeto_mem(self.i2c_address, address, bytes([data]), addrsize=16)
         sleep_ms(10) # EEPROM needs time to write
 
-
+    
     def read_byte(self, address):
         if((address > self._MAX_ADDRESS) or (address < 0)):
             raise ValueError("Address is outside of device address range")
@@ -61,3 +80,19 @@ class EEPROM24x:
         self.data_read = self.i2c.readfrom_mem(self.i2c_address, address, 1, addrsize=16)
         self.data_read = int.from_bytes(self.data_read, "big")
         return(self.data_read)
+
+
+    def read_bytes(self, address, num_bytes=1):
+        if((address > self._MAX_ADDRESS) or (address < 0)):
+            raise ValueError("Address is outside of device address range")
+            return()
+        """
+        self.data_read = bytearray(num_bytes)
+        self.data_read = self.i2c.readfrom_mem(self.i2c_address, address, num_bytes, addrsize=16)
+        # self.data_read = int.from_bytes(self.data_read, "big")
+        return(self.data_read)
+        """
+        self.data8 = self.i2c.readfrom_mem(self.i2c_address, address, num_bytes, addrsize=16)
+        print("="*12,self.data8)
+        return self.data8
+
