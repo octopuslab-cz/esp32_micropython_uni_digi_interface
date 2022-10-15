@@ -5,8 +5,10 @@ from octopus_digital import bin_str_to_int, num_to_bin_str8, hex_to_str
 from octopus_digital import num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from octopus_digital import char_to_hex, hex_dump
 from components.i2c_eeprom_24xxx import EEPROM24x
+from utils.octopus_decor import octopus_duration
 
 
+DEBUG = True
 data_256 = bytearray(256)
 
 
@@ -39,7 +41,8 @@ self._bmp_i2c.writeto_mem(self._bmp_addr, 0xF4, bytearray([0x2E]))
 
 """
 
-def eeprom_read_256_1(num=64): # per 1 Byte
+@octopus_duration(DEBUG)
+def eeprom_read_256_1(num=256): # per 1 Byte
     global data_256
     byte = bytearray(1)
     for i in range(num): # 8*8=64 // 16*8=128 //
@@ -49,18 +52,14 @@ def eeprom_read_256_1(num=64): # per 1 Byte
         #data_256[i] = int(hex(byte))
         data_256[i] = byte[0]
 
-  
-def eeprom_read_256():
+
+@octopus_duration(DEBUG)
+def eeprom_read_256(n=256):
     global data_256
     for i in range(16): # 8*8=64 // 16*8=128 //
-        #ok1#data = i2c.readfrom_mem(EEPROM_ADDR, i*8, 8)
-        #ok2#data = eeprom_read_block(i*8,8)
         data = eeprom.read_bytes(i*8,8)
-        # byte =  eeprom_read(i)
-        # data_256[i] = byte
         a = 0
         for byte in data:
-            ## print(i*8+a,hex(byte),chr(int(hex(byte))))
             data_256[i*8+a] = byte
             a += 1
 
@@ -128,8 +127,8 @@ for i in range(16):
 
 
 print("> eeprom_read_256()")
-#ok2#eeprom_read_256_1()
-eeprom_read_256()
+# eeprom_read_256_1(256) # --> duration (milis.) --> 2560
+eeprom_read_256(256)     # --> duration (milis.) --> 159
 
 
 print("> hex_dump")
