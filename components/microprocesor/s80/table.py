@@ -28,6 +28,10 @@ zero_param_instr = {
 	'HLT',
 	'RIM',
 	'SIM',
+    'INR A',
+    'INR B',
+    'DCR A',
+    'DCR B',
 }
 
 
