@@ -40,32 +40,37 @@ instr_set = [0x00,0x3E,0x07,0x3D,0x00,0xC2,0x00,0x03,0x00,0x00,0x00,0x00,0x00]
 # for i in range(len(instr_set)):
 
 @octopus_duration(DEBUG)
-def run_hex_code(instr_set, run_delay_ms=1):
+def run_hex_code(instr_set, run_delay_ms=1, run=True):
     run_code = True
+    pc = 0
     while run_code: # max loop
-        pc = uP.pc
+        if run: pc = uP.pc
         instr = opcodes.get(instr_set[pc])
         if instr:
             # try:
             hex_i0 = num_to_hex_str2(instr_set[pc])+"  "
             if instr in table.zero_param_instr:
                 print("(0)",pc,hex_i0, instr)
-                # pc += 1
+                add_pc = 1
                 param = ""
 
             if instr in table.double_param_instr:
                 param1 = instr_set[pc+1]
                 param2 = instr_set[pc+2]
                 print("(2)",pc,hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
-                # pc += 3
+                add_pc = 3
                 param = param1, param2
                 
             if (instr not in table.double_param_instr) and (instr not in table.zero_param_instr):
                 param = instr_set[pc+1]
                 print("(1)",pc,hex_i0 , instr, hex(param))
-                # pc += 2
+                add_pc = 2
                 
-            uP.execute(instr, param)
+            if run:
+                uP.execute(instr, param)
+            else:
+                pc += add_pc
+                uP.pc = pc
             # except:
             # Err = "list index out of range"
         else:
@@ -79,19 +84,10 @@ def run_hex_code(instr_set, run_delay_ms=1):
 
 print("--- start ---")
 print("len(instr_set):", len(instr_set))
-run_hex_code(instr_set)
-
+# run_hex_code(instr_set,run_delay_ms=500,run=False)
+run_hex_code(instr_set,run_delay_ms=1,run=True)
 
 print()
 print("-"*30)
 uP.set_acc(0)
 uP.print_regs()
-
-
-
-
-
-
-
-
-

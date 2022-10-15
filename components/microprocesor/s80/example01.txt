@@ -6,7 +6,24 @@ basic MVI, DCR, JNZ
 #                  MVI 07   DCR A(3d)   JNZ
 instr_set = [0x00,0x3E,0x07,0x3D,0x00,0xC2,0x00,0x03,0x00,0x00,0x00,0x00,0x00]
 
+--- decorator --- @octopus_duration:
+--- start ---
+len(instr_set): 13
+(0) 0 00   NOP
+(1) 1 3e   MVI A 0x7
+(0) 3 3d   DCR A
+(0) 4 00   NOP
+(2) 5 c2   JNZ 00 03
+(0) 8 00   NOP
+(0) 9 00   NOP
+(0) 10 00   NOP
+(0) 11 00   NOP
+(0) 12 00   NOP
+.:. function:  run_hex_code
+--> duration (milis.) --> 5015
 
+
+//------------------------------------------------------
 
 (0) 0 00   NOP
                         --->#1 |S0 Z0 C0| 00000000 | 0, 0x0 1 
