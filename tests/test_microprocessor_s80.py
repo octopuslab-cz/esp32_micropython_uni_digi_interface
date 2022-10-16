@@ -23,25 +23,17 @@ for i in instr.instructions:
 """    
 
 # ===========================================================
-
 DEBUG = False
 uP = Executor() # microProcesor
 
-# instr = opcodes[0x00] # 'NOP'
+
 print("-"*30)
 print("mem_free:",gc.mem_free())
-"""
-print("instructions revers. (opcode/instr list:")
-opcodes = {}
-for instruct, opcode in instr.instructions.items():
-    opcodes[opcode] = instruct
-    if DEBUG: print(opcodes[opcode], end=".")
-"""    
-
 print("--- start ---")
 uP.set_acc(0)
 uP.print_regs()
 print("mem_free:",gc.mem_free())
+# instr = opcodes[0x00] # 'NOP'
 ##instr_set = [0x3e,0x7,0x0,0x3d,0xc2,0x0,0x3,0x0,0x3e,0x9,0x7,0x7,0x7,]
 # create_hex_program(program, info = True)
 
@@ -56,13 +48,9 @@ print("-"*30)
 #print("RRC", hex(instr.instructions["RRC"]),instr.instructions["RRC"])
 #print("RLC", hex(instr.instructions["RLC"]),instr.instructions["RLC"])
 
-
 print("len(instr_set):", len(hex_program))
-##run_hex_code(instr_set,run_delay_ms=100,run=False)
-##print("="*30)
-##run_hex_code(instr_set,run_delay_ms=100,run=True)
 print("="*30)
-run_hex_code(uP,hex_program,100)
+run_hex_code(uP,hex_program,run_delay_ms=1)
 
 print()
 print("-"*30)

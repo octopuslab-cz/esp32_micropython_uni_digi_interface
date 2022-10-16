@@ -1,10 +1,11 @@
 # core simple_80 processor
-
+from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
-from octopus_digital import num_to_bin_str8
+from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
 from components.microprocessor.s80.table import get_instr_param
+
 
 """
 from components.microprocesor.s80.core import Executor
@@ -247,6 +248,15 @@ def parse_file(file_name):
     return program
 
 
+DEBUG = False
+
+print("instructions revers. (opcode/instr list:")
+opcodes = {}
+for instruct, opcode in instr.instructions.items():
+    opcodes[opcode] = instruct
+    if DEBUG: print(opcodes[opcode], end=".")
+
+
 def create_hex_program(p, prn=True, info=False):
     hex_program = []
     if info:
@@ -267,3 +277,48 @@ def create_hex_program(p, prn=True, info=False):
             print(str(hex_i)+"??? ", end=",")
     if prn: print("]", end="")
     return hex_program
+
+
+@octopus_duration(True)
+def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
+    
+    run_code = True
+    pc, uP.pc = 0, 0
+    while run_code: # max loop
+        if run: pc = uP.pc
+        instr = opcodes.get(int(instr_set[pc]))
+        if DEBUG: print("instr:", instr)
+        if instr:
+            # try:
+            hex_i0 = num_to_hex_str2(int(instr_set[pc]))+"  "
+            if instr in table.zero_param_instr:
+                print("{0}",pc,hex_i0, instr)
+                add_pc = 1
+                param = ""
+
+            if instr in table.double_param_instr:
+                param1 = instr_set[pc+1]
+                param2 = instr_set[pc+2]
+                print("{2}",pc,hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
+                add_pc = 3
+                param = param1, param2
+                
+            if (instr not in table.double_param_instr) and (instr not in table.zero_param_instr):
+                param = instr_set[pc+1]
+                print("{1}",pc,hex_i0 , instr, hex(param))
+                add_pc = 2
+                
+            if run:
+                uP.execute(instr, param)
+            else:
+                pc += add_pc
+                uP.pc = pc
+            # except:
+            # Err = "list index out of range"
+        else:
+            print(hex(instr_set[pc]), "???")
+            # pc += 1
+        ##print("> uP.pc:", uP.pc, len(instr_set))
+        if uP.pc >= len(instr_set):
+            run_code = False
+        sleep_ms(run_delay_ms)
