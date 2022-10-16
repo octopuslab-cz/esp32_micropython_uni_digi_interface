@@ -6,9 +6,12 @@ zero_param_instr = {
 	'RPE','RPO','RLC','RRC','RAL','RAR',
 	'CMA','STC','CMC','DAA','EI','DI',
 	'NOP','HLT','RIM','SIM',
-    'INR_A', 'INR_B', 'INR_C',
-    'DCR_A', 'DCR_B', 'DCR_C',
-    'MOV_B,A','MOV_C,A','MOV_A,B','MOV_A,C',
+    'INR_A', 'INR_B', 'INR_C', 'DCR_A', 'DCR_B', 'DCR_C',
+    'MOV_B,A','MOV_C,A','MOV_L,A','MOV_H,A','MOV_M,A',
+    'MOV_A,B','MOV_C,B','MOV_L,B','MOV_H,B','MOV_M,B',
+    'MOV_A,C','MOV_B,C','MOV_L,C','MOV_H,C','MOV_M,C',
+    'MOV_A,M',
+    'MOV_A,A','MOV_B,B','MOV_C,C','MOV_D,D','MOV_E,E','MOV_L,L','MOV_H,H',
 }
 
 

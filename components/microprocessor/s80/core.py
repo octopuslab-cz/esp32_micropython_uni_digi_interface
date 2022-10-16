@@ -37,9 +37,9 @@ class Executor:
     def __init__(self):
         self.debug = True
         
-        
-        self.pc = 0 # programm counter
-        self.sp = 0 # stack
+        self.vm = {} # virtual memory
+        self.pc = 0  # programm counter
+        self.sp = 0  # stack pointer - single
         
         # general registers
         self.a = 0  # acc
@@ -47,6 +47,8 @@ class Executor:
         self.c = 0  # reg c
         self.d = 0  # reg d
         self.e = 0  # reg e
+        self.l = 0
+        self.h = 0
         
         #self.regs = [0] * 16
         #self.memory = [0] * 256
@@ -68,11 +70,11 @@ class Executor:
             
     def print_regs(self): # dec, hex, bin
         print("="*32)
-        print("a",self.a, hex(self.a), bin(self.a))
-        print("b",self.b)
-        print("c",self.c)
-        print("d",self.d)
-        print("e",self.e)
+        print("a:",self.a, hex(self.a), bin(self.a))
+        print("b:",self.b, " | c:",self.c)
+        print("h:",self.h, " | l:",self.l)
+        # print("d",self.d)
+        # print("e",self.e)
         print("-"*32)
         print("|S|Z|0|C|0|P|1|C|")
         print(f"|{self.sb}|{self.zb}|0|{self.acb}|0|{self.pb}|1|{self.cb}|")
@@ -111,13 +113,37 @@ class Executor:
             self.pc += 1
             if self.a > 255:
                 self.a = 0
-                self.cb = 1            
+                self.cb = 1
+                
+        if inst=="INR_B":
+            self.b += 1
+            self.pc += 1
+            if self.b > 255:
+                self.b = 0
+                self.cb = 1
+                
+        if inst=="INR_C":
+            self.c += 1
+            self.pc += 1
+            if self.c > 255:
+                self.c = 0
+                self.cb = 1      
             
         if inst=="DCR_A":
             self.a -= 1
             self.pc += 1
             self.zb = 1 if self.a == 0 else 0            
         
+        if inst=="DCR_B":
+            self.b -= 1
+            self.pc += 1
+            self.zb = 1 if self.b == 0 else 0            
+        
+        if inst=="DCR_C":
+            self.c -= 1
+            self.pc += 1
+            self.zb = 1 if self.c == 0 else 0
+            
         if inst=="MVI_A":
             self.a = param
             self.zb = 1 if self.a == 0 else 0
@@ -131,6 +157,14 @@ class Executor:
             self.c = param
             self.pc += 2
          
+        if inst=="MVI_L":
+            self.l = param
+            self.pc += 2
+            
+        if inst=="MVI_H":
+            self.h = param
+            self.pc += 2
+            
         if inst=="MOV_B,A":
             self.b = self.a
             self.pc += 1
@@ -145,6 +179,14 @@ class Executor:
     
         if inst=="MOV_A,C":
             self.a = self.c
+            self.pc += 1
+                    
+        if inst=="MOV_A,M":
+            self.a = self.vm.get(self.h*255+self.l)
+            self.pc += 1
+            
+        if inst=="MOV_M,A":
+            self.vm[self.h*255+self.l] = self.a
             self.pc += 1
             
         if inst=="ADD":        
@@ -166,11 +208,25 @@ class Executor:
         #self.cy = self.acc >> 4
         #self.acc &= 0xF
             
+        if inst=="JMP":
+            self.pc = param[0]*255+param[1] +1# direct to addr: 0x00 0xFF
+            if(self.debug):
+                print("> JMP to ",self.pc)
+                        
+        if inst=="CALL":
+            self.sp = self.pc + 3 # stack
+            self.pc = param[0]*255+param[1] - 1 # -1?> todo bettre laber interpret. 0x00 0xFF
+            if(self.debug): print("> CALL from",self.sp,"to",self.pc)
+                     
+        if inst=="RET":
+            self.pc = self.sp # stack
+            if(self.debug): print("> RET to ",self.pc)
+            self.sp = 0
+            
         if inst=="JNZ":
             if self.zb == 0:
                 self.pc = param[0]*255+param[1] # 0x00 0xFF
-                if(self.debug):
-                     print("> jump to ",self.pc)
+                if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3 
             
@@ -180,7 +236,24 @@ class Executor:
                 if(self.debug):
                      print("> jump to ",self.pc)
             else:
-                self.pc += 3 
+                self.pc += 3
+                
+        # ------------- spec operations --------
+        if inst=="MOV_A,A":
+            print("spec operation - acc:", self.a)
+            self.pc += 1
+            
+        if inst=="MOV_C,C":
+            print("spec.op. - pc:", self.pc)
+            self.pc += 1
+            
+        if inst=="MOV_D,D":
+            print("spec.op. - display (ToDo) ...")
+            self.pc += 1
+            
+        if inst=="MOV_E,E":
+            print("spec.op. - vitrual memory:", self.vm)
+            self.pc += 1  
             
         if(self.debug):
             print(f"                        --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
@@ -279,7 +352,7 @@ def create_hex_program(p, prn=True, info=False):
     return hex_program
 
 
-@octopus_duration(True)
+# @octopus_duration(True)
 def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
     
     run_code = True
