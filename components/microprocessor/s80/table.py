@@ -8,6 +8,7 @@ zero_param_instr = {
 	'NOP','HLT','RIM','SIM',
     'INR_A', 'INR_B', 'INR_C',
     'DCR_A', 'DCR_B', 'DCR_C',
+    'MOV_B,A','MOV_C,A','MOV_A,B','MOV_A,C',
 }
 
 

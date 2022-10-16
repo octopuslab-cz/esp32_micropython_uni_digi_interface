@@ -107,15 +107,15 @@ class Executor:
         
         if inst=="INR_A":
             self.a += 1
+            self.pc += 1
             if self.a > 255:
                 self.a = 0
-                self.cb = 1
-            self.pc += 1
+                self.cb = 1            
             
         if inst=="DCR_A":
             self.a -= 1
-            self.zb = 1 if self.a == 0 else 0
             self.pc += 1
+            self.zb = 1 if self.a == 0 else 0            
         
         if inst=="MVI_A":
             self.a = param
@@ -126,6 +126,26 @@ class Executor:
             self.b = param
             self.pc += 2
     
+        if inst=="MVI_C":
+            self.c = param
+            self.pc += 2
+         
+        if inst=="MOV_B,A":
+            self.b = self.a
+            self.pc += 1
+            
+        if inst=="MOV_A,B":
+            self.a = self.b
+            self.pc += 1
+    
+        if inst=="MOV_C,A":
+            self.c = self.a
+            self.pc += 1
+    
+        if inst=="MOV_A,C":
+            self.a = self.c
+            self.pc += 1
+            
         if inst=="ADD":        
             self.a = self.a + param + self.cy
         
@@ -191,13 +211,17 @@ def parse_file(file_name):
                     pc += i_pc
                     i_hex = hex(instr.instructions[i1])
                     program.append(hex(int(i_hex)))
-                    if i_pc > 2:
-                        print("---jmp---add 0x00")
-                        program.append(0x0) # simple jmp to (0 addr)
-                    if i_pc > 1:
-                        i_p1 = parts[1]
-                        #if i_p1+":" in labels
-                        program.append(i_p1)
+                    try:
+                        if i_pc > 2:
+                            print("---jmp---add 0x00")
+                            program.append(0x0) # simple jmp to (0 addr)
+                        if i_pc > 1:
+                            i_p1 = parts[1]
+                            #if i_p1+":" in labels
+                            program.append(i_p1)
+                    except:
+                        print("Err. No3")
+                        program.append(0)
                     #if i_pc > 2: i_p2 = parts[2]
                     
             # find label

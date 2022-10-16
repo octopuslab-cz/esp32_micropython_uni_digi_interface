@@ -1,6 +1,25 @@
-# s80: 8080/85 - simple80 microprocessor
+# s80: simple80 for microprocessor emulator (8080/85)
+# --- OctopusLAB 2015-22
+# only the most important commands
 
 instructions = {
+    'NOP':      0x00,
+    'RLC':      0x07,
+    'RRC':      0x0F,
+    'MVI_A':    0x3E,
+    'MVI_B':    0x06,
+    'MVI_C':    0x0E,
+    'JNZ':      0xC2,
+    'JNC':      0xD2,
+    'DCR_A':    0x3D,
+    'INR_A':    0x3C,
+    'MOV_B,A':  0x47,
+    'MOV_B,C':  0x41,
+    'MOV_C,A':  0x4F,
+    'MOV_C,B':  0x48,
+    }
+
+instructions_all = {
     'NOP':      0x00,
     'LXI_B':    0x01,
     'STAX_B':   0x02,
