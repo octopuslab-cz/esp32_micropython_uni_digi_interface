@@ -37,23 +37,30 @@ print("mem_free:",gc.mem_free())
 ##instr_set = [0x3e,0x7,0x0,0x3d,0xc2,0x0,0x3,0x0,0x3e,0x9,0x7,0x7,0x7,]
 # create_hex_program(program, info = True)
 
-#program = parse_file("example00_s80.asm")
-program = parse_file("example05_s80.asm")
-hex_program = create_hex_program(program,prn=False)
+def run_test(f="example05_s80.asm"):
+    #program = parse_file("example00_s80.asm")
+    print("-"*30)
+    program = parse_file(f)
+    hex_program = create_hex_program(program,prn=False)
 
-print("-"*30)
-print("- program_num",hex_program)
-##print("- instr_set", instr_set)
-print("-"*30)
-#print("RRC", hex(instr.instructions["RRC"]),instr.instructions["RRC"])
-#print("RLC", hex(instr.instructions["RLC"]),instr.instructions["RLC"])
 
-print("len(instr_set):", len(hex_program))
-print("="*30)
-run_hex_code(uP,hex_program,run_delay_ms=100)
+    print("- program_num",hex_program)
+    ##print("- instr_set", instr_set)
+    print("-"*30)
 
-print()
-print("-"*30)
-print("mem_free:",gc.mem_free())
-uP.print_regs()
-print("virtual memory:", uP.vm)
+
+    print("len(instr_set):", len(hex_program))
+    print("="*30)
+    run_hex_code(uP,hex_program,run_delay_ms=100)
+
+    print()
+    print("-"*30)
+    print("mem_free:",gc.mem_free())
+    uP.print_regs()
+    print("virtual memory:", uP.vm)
+    sleep(2)
+    
+run_test("example01_s80.asm")
+run_test("example02_s80.asm")    
+run_test("example03_s80.asm")
+run_test("example05_s80.asm")
