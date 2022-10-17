@@ -1,6 +1,7 @@
 ; example06 - simple data_string
      #DATA = "octopus test"
 ; fix virtual RAM addr: 256+ (0x01,0x00+)
+; org 0x00
 ;------------------------
 start:
     MVI_L 0x00 ; 

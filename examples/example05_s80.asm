@@ -1,4 +1,6 @@
-; example05 spec operation / 2x call
+; example05 spec subroutines / 2x call
+; org 0x00
+;
     JMP start
     NOP
 sub1:

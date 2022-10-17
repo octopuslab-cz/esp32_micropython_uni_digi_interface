@@ -1,4 +1,6 @@
-# core simple_80 processor
+# octopusLAB - core - simple_80 processor
+__version__ = "0.3" # 2022/10/17
+
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
@@ -40,7 +42,7 @@ cb C  State of Carry bit
 class Executor:
     
     def __init__(self):
-        self.debug = True
+        self.debug = False
         
         self.vm = {} # virtual memory
         self.vm[255] = 0
@@ -288,8 +290,7 @@ class Executor:
             
         if inst=="JMP":
             self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
-            if(self.debug):
-                print("> JMP to ",self.pc)
+            if(self.debug):print("> JMP to ",self.pc)
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
@@ -311,8 +312,7 @@ class Executor:
         if inst=="JZ":
             if self.zb == 1:
                 self.pc = param[1] # 0x00 0xFF
-                if(self.debug):
-                     print("> jump to ",self.pc)
+                if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
                 
@@ -326,8 +326,7 @@ class Executor:
         if inst=="JC":
             if self.cb == 1:
                 self.pc = param[1] # 0x00 0xFF
-                if(self.debug):
-                     print("> jump to ",self.pc)
+                if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
                 
@@ -363,14 +362,15 @@ class Executor:
             if HW_COMPONETS: led.value(0)
             self.pc += 1  
             
-        if(self.debug):
-            print(f"                        --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
+        if(True): # /debug
+            print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
-# ----------------------------------------------
-def parse_file(uP, file_name):
+# -----------------------------------------
+def parse_file(uP, file_name, debug = True):
     pc = 0
     labels = {}
     program = []
+    print("[ two-pass translator ]")
     print("- open file:", file_name)
            
     # f = open("data/" + file)
@@ -437,8 +437,9 @@ def parse_file(uP, file_name):
             print(l, " pc:",pc, " instr:", i_hex," pc+",i_pc," p1,p2", i_p1, i_p2)
             l += 1
     
-    print("temp_labels:",labels)
-    print("temp_prog. :",program)
+    print("- temp_labels:",labels)
+    print("- temp_prog. :",program)
+    print("[ the second pass replaces labels with addr. ]")
     
     i=0
     
@@ -454,7 +455,7 @@ def parse_file(uP, file_name):
 
 DEBUG = False
 
-print("instructions revers. (opcode/instr list:")
+print("- instructions revers. (opcode/instr list)")
 opcodes = {}
 for instruct, opcode in instr.instructions.items():
     opcodes[opcode] = instruct
@@ -483,7 +484,7 @@ def create_hex_program(p, prn=True, info=False):
     return hex_program
 
 
-# @octopus_duration(True)
+@octopus_duration(True)
 def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
     
     run_code = True
@@ -496,20 +497,20 @@ def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
             # try:
             hex_i0 = num_to_hex_str2(int(instr_set[pc]))+"  "
             if instr in table.zero_param_instr:
-                print("{0}",pc,hex_i0, instr)
+                print(pc,"{0}",hex_i0, instr)
                 add_pc = 1
                 param = ""
 
             if instr in table.double_param_instr:
                 param1 = instr_set[pc+1]
                 param2 = instr_set[pc+2]
-                print("{2}",pc,hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
+                print(pc,"{2}",hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
                 add_pc = 3
                 param = param1, param2
                 
             if (instr not in table.double_param_instr) and (instr not in table.zero_param_instr):
                 param = instr_set[pc+1]
-                print("{1}",pc,hex_i0 , instr, hex(param))
+                print(pc,"{1}",hex_i0 , instr, hex(param))
                 add_pc = 2
                 
             if run:

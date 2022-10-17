@@ -1,4 +1,6 @@
 ; example01_s80 - test correct JUMP
+; org 0x00 ; (default)
+;
 start:
     MVI_A 0x07 ; note
     MOV_B,A

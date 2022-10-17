@@ -1,34 +1,31 @@
 ; example03 - test CALL sub1 (subroutine)
+; org 0x00 ; (default)
+;
     JMP start
     NOP
 sub1:
-    NOP; ???
-    NOP
+    NOP ; 1x nop = ok
     MVI_A 0xFF
     RET
-    NOP
     ;
 start:
-    NOP; ??? pc +/- 1
+    NOP ; 2 x NOP = ok 
     NOP
-    NOP
-    MVI_L 0x1 ; note RAM7
-    MVI_H 0x3
+    MVI_L 0x3 ; note RAM7
+    MVI_H 0x1
     MVI_A 0x9
     MOV_M,A
     ;
     MVI_L 0x2 ; note RAM7
-    MVI_H 0x3
+    ;MVI_H 0x1
     MVI_A 0x7
     MOV_M,A
     ;
-    MVI_L 0x1 ; note RAM7
-    MVI_H 0x3
+    MVI_L 0x3 ; note RAM7
+    ;MVI_H 0x1
     MOV_A,M
                ; b = 7
-    NOP
     CALL sub1
     ; 
     MVI_A 0xFE ; 36
-    NOP
 end.
