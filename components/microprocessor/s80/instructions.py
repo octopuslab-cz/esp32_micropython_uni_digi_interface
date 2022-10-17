@@ -4,6 +4,8 @@
 
 instructions = {
     'NOP':      0x00,
+    'LDA':      0x3A,
+    'STA':      0x32,
     'RLC':      0x07,
     'RRC':      0x0F,
     'MVI_A':    0x3E,
@@ -17,9 +19,13 @@ instructions = {
     'DCR_A':    0x3D,
     'DCR_B':    0x05,
     'DCR_C':    0x0D,
+    'DCR_H':    0x25,
+    'DCR_L':    0x2D,
     'INR_A':    0x3C,
     'INR_B':    0x04,
     'INR_C':    0x0C,
+    'INR_H':    0x24,
+    'INR_L':    0x2C,
     'MOV_A,B':  0x78,
     'MOV_A,C':  0x79,
     'MOV_A,H':  0x7C,
@@ -61,6 +67,12 @@ instructions = {
     'MOV_E,E':  0x5B,
     'MOV_L,L':  0x6D,
     'MOV_H,H':  0x64,
+    'CMP_A':    0xBF,
+    'CMP_B':    0xB8,
+    'CMP_C':    0xB9,
+    'CMP_H':    0xBC,
+    'CMP_L':    0xBD,
+    'CMP_M':    0xBE,
     
     }
 

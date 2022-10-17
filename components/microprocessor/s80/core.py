@@ -70,6 +70,7 @@ class Executor:
             
     def print_regs(self): # dec, hex, bin
         print("="*32)
+        print("[ system registers ]")
         print("a:",self.a, hex(self.a), bin(self.a))
         print("b:",self.b, " | c:",self.c)
         print("h:",self.h, " | l:",self.l)
@@ -78,6 +79,25 @@ class Executor:
         print("-"*32)
         print("|S|Z|0|C|0|P|1|C|")
         print(f"|{self.sb}|{self.zb}|0|{self.acb}|0|{self.pb}|1|{self.cb}|")
+        print("="*32)
+        
+    def print_vm(self):
+        print("[ virtual memory ] - (16/32 bytes)")
+        vm_sorted = [0] * 16  # simple 16 Bytes
+        # vm_sorted = dict(sorted(self.vm.items()))
+        vm_offset = 256
+        for addr,data in self.vm.items():
+             vm_sorted[addr-vm_offset] = data
+        print(vm_sorted)
+        print("--- hexa:")
+        for ch in vm_sorted:
+            print(hex(ch),end=" ")
+        print()
+        print("--- string:")
+        for ch in vm_sorted:
+            # print(ch)
+            print(chr(ch),end="")
+        print()
         print("="*32)
 
     """
@@ -127,8 +147,22 @@ class Executor:
             self.pc += 1
             if self.c > 255:
                 self.c = 0
-                self.cb = 1      
-            
+                self.cb = 1
+                
+        if inst=="INR_H":
+            self.h += 1
+            self.pc += 1
+            if self.h > 255:
+                self.h = 0
+                self.cb = 1
+                
+        if inst=="INR_L":
+            self.l += 1
+            self.pc += 1
+            if self.l > 255:
+                self.l = 0
+                self.cb = 1   
+        
         if inst=="DCR_A":
             self.a -= 1
             self.pc += 1
@@ -143,6 +177,29 @@ class Executor:
             self.c -= 1
             self.pc += 1
             self.zb = 1 if self.c == 0 else 0
+            
+        if inst=="DCR_H":
+            self.h -= 1
+            self.pc += 1
+            self.zb = 1 if self.h == 0 else 0
+            
+        if inst=="DCR_L":
+            self.l -= 1
+            self.pc += 1
+            self.zb = 1 if self.l == 0 else 0
+        
+        if inst=="LDA":
+            # [0]=H [1]=L   0x01 0x03 = 256+3
+            addr = param[0]*256 + param[1]
+            print("LDA addr test", param[0], param[1], "-->",addr, self.vm.get(addr))
+            self.a = self.vm.get(addr)
+            self.pc += 3
+            
+        if inst=="STA":
+            # [0]=H [1]=L   0x01 0x03 = 256+3
+            addr = param[0]*256 + param[1]
+            self.vm[addr] = self.a
+            self.pc += 3
             
         if inst=="MVI_A":
             self.a = param
@@ -182,11 +239,13 @@ class Executor:
             self.pc += 1
                     
         if inst=="MOV_A,M":
-            self.a = self.vm.get(self.h*255+self.l)
+            addr = self.h*256+self.l
+            self.a = self.vm.get(addr)
+            #print("MOV_A,M addr test", self.h, self.l, "-->",addr,self.vm.get(addr))
             self.pc += 1
             
         if inst=="MOV_M,A":
-            self.vm[self.h*255+self.l] = self.a
+            self.vm[self.h*256+self.l] = self.a
             self.pc += 1
             
         if inst=="ADD":        
@@ -209,13 +268,13 @@ class Executor:
         #self.acc &= 0xF
             
         if inst=="JMP":
-            self.pc = param[0]*255+param[1] +1# direct to addr: 0x00 0xFF
+            self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
             if(self.debug):
                 print("> JMP to ",self.pc)
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
-            self.pc = param[0]*255+param[1] - 1 # -1?> todo bettre laber interpret. 0x00 0xFF
+            self.pc = param[0]*256+param[1] - 1 # -1?> todo bettre laber interpret. 0x00 0xFF
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
                      
         if inst=="RET":
@@ -225,7 +284,7 @@ class Executor:
             
         if inst=="JNZ":
             if self.zb == 0:
-                self.pc = param[0]*255+param[1] # 0x00 0xFF
+                self.pc = param[0]*256+param[1]
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3 
@@ -259,7 +318,7 @@ class Executor:
             print(f"                        --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
 # ----------------------------------------------
-def parse_file(file_name):
+def parse_file(uP, file_name):
     pc = 0
     labels = {}
     program = []
@@ -275,36 +334,58 @@ def parse_file(file_name):
         
         # clean up    
         clean_line = line.split(";")[0].strip()
+        
+        # data_string
+        index_vm = 256  # start data virtual memory FF+1
+        if clean_line.count("#DATA"): 
+            parts = clean_line.split("=")
+            data_string=parts[1].strip().replace('"','')
+            print("data_string:",data_string)
+            for ch in data_string:
+                uP.vm[index_vm] = ord(ch)
+                index_vm += 1
+            uP.vm[index_vm] = 0 # last "0" = stop
+        
         if len(clean_line) > 0:
             i_pc, i_hex, i_p1, i_p2 = 0,0,"",""
             for i1 in instr.instructions:
                 if i1 in clean_line:
                     parts = clean_line.split(" ")
-                    print("---parts",parts)
+                    print("---parts:",parts)
                     i_pc = get_instr_param(i1)
                     pc += i_pc
                     i_hex = hex(instr.instructions[i1])
                     program.append(hex(int(i_hex)))
-                    try:
-                        if i_pc > 2:
-                            print("---jmp---add 0x00")
-                            program.append(0x0) # simple jmp to (0 addr)
-                        if i_pc > 1:
-                            i_p1 = parts[1]
-                            #if i_p1+":" in labels
-                            program.append(i_p1)
-                    except:
-                        print("Err. No3")
-                        program.append(0)
-                    #if i_pc > 2: i_p2 = parts[2]
+                    
+                    if i1 =="LDA" or i1 =="STA":
+                        print("-LD/ST-A-add",parts[1],parts[2])
+                        # program.append(0x0) # simple jmp to (0 addr)
+                        program.append(parts[1])
+                        program.append(parts[2])
+                    else:
+                        try:                            
+                            if i_pc > 2:                                
+                                print("---jmp---add 0x00")
+                                program.append(0x0) # simple jmp to (0 addr)
+                            if i_pc > 1:
+                                i_p1 = parts[1]
+                                #if i_p1+":" in labels
+                                program.append(i_p1)
+                    
+                        #if i_pc > 2: i_p2 = parts[2]
+                            
+                        
+                        except:
+                            print("Err. No3")
+                            program.append(0)
                     
             # find label
             label = "-"
             if line.count(":") == 1:
                 ## labels.append(line.split(" ")[0])
-                labels[line.split(" ")[0]] = pc+1 # dict test init (next pc)
+                labels[line.split(" ")[0]] = pc # dict test init (next pc)
                      
-            print(l, pc, clean_line, i_hex,"*",i_pc, i_p1, i_p2)
+            print(l, " pc:",pc, " instr:", i_hex," pc+",i_pc," p1,p2", i_p1, i_p2)
             l += 1
     
     print("temp_labels:",labels)
@@ -315,6 +396,7 @@ def parse_file(file_name):
     for part1 in program:
         if str(part1)+":" in labels:
             print("---label---",part1+":",labels[part1+":"])
+            print(program[i],"<---",labels[part1+":"])
             program[i] = labels[part1+":"] # todo addr 2 bytes
         i += 1
   

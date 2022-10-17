@@ -1,4 +1,4 @@
-; example03 test
+; example03 - test CALL sub1 (subroutine)
     JMP start
     NOP
 sub1:
@@ -32,6 +32,3 @@ start:
     MVI_A 0xFE ; 36
     NOP
 end.
-
-;['0x3e','0x07','0x47','0x0','0x3d','0xc2',0,'loop1','0x0','0x3e','0x09','0x7','0x7','0x7','0xf','0xf', '0xf', '0x0']
-; program_num [62, 7, 71, 0, 61, 194, 0, 4, 0, 62, 9, 7, 7, 7, 15, 15, 15, 0]

@@ -1,4 +1,4 @@
-; example01 test
+; example02_s80 - test jumps
 start:
     MVI_A 0x07 ; note
     MOV_B,A
@@ -12,7 +12,7 @@ loop1:
     MVI_B 0x07
     ;
 loop2:
-    NOP ; err?? -> pc-1
+    NOP ; 
     RLC
     DCR_B      ; decrement
     JNZ loop2  ; jump if not zero 
