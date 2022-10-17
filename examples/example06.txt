@@ -1,0 +1,118 @@
+; example06 - simple data_string
+     #DATA = "octopus test"
+; fix virtual RAM addr: 256+ (0x01,0x00+)
+;------------------------
+start:
+    MVI_L 0x00 ; 
+    MVI_H 0x01
+    MOV_A,M
+    INR_L
+    MOV_A,M
+    INR_L
+    MOV_A,M
+;
+    LDA 0x01 0x00 ; note
+    LDA 0x01 0x01
+    LDA 0x01 0x02
+    NOP
+    MVI_A 45 ; ord("-")=45
+    STA 0x01 0x0C
+; 
+    NOP
+end.
+;
+
+================================
+- open file: example06_s80.asm
+data_string: octopus test
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+1  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_L', '0x00']
+2  pc: 2  instr: 0x2e  pc+ 2  p1,p2 0x00 
+---parts: ['MVI_H', '0x01']
+3  pc: 4  instr: 0x26  pc+ 2  p1,p2 0x01 
+---parts: ['MOV_A,M']
+4  pc: 5  instr: 0x7e  pc+ 1  p1,p2  
+---parts: ['INR_L']
+5  pc: 6  instr: 0x2c  pc+ 1  p1,p2  
+---parts: ['MOV_A,M']
+6  pc: 7  instr: 0x7e  pc+ 1  p1,p2  
+---parts: ['INR_L']
+7  pc: 8  instr: 0x2c  pc+ 1  p1,p2  
+---parts: ['MOV_A,M']
+8  pc: 9  instr: 0x7e  pc+ 1  p1,p2  
+---parts: ['LDA', '0x01', '0x00']
+-LD/ST-A-add 0x01 0x00
+9  pc: 12  instr: 0x3a  pc+ 3  p1,p2  
+---parts: ['LDA', '0x01', '0x01']
+-LD/ST-A-add 0x01 0x01
+10  pc: 15  instr: 0x3a  pc+ 3  p1,p2  
+---parts: ['LDA', '0x01', '0x02']
+-LD/ST-A-add 0x01 0x02
+11  pc: 18  instr: 0x3a  pc+ 3  p1,p2  
+---parts: ['NOP']
+12  pc: 19  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['MVI_A', '45']
+13  pc: 21  instr: 0x3e  pc+ 2  p1,p2 45 
+---parts: ['STA', '0x01', '0x0C']
+-LD/ST-A-add 0x01 0x0C
+14  pc: 24  instr: 0x32  pc+ 3  p1,p2  
+---parts: ['NOP']
+15  pc: 25  instr: 0x0  pc+ 1  p1,p2  
+16  pc: 25  instr: 0  pc+ 0  p1,p2  
+temp_labels: {'start:': 0}
+temp_prog. : ['0x2e', '0x00', '0x26', '0x01', '0x7e', '0x2c', '0x7e', '0x2c', '0x7e', '0x3a', '0x01', '0x00', '0x3a', '0x01', '0x01', '0x3a', '0x01', '0x02', '0x0', '0x3e', '45', '0x32', '0x01', '0x0C', '0x0']
+- program_num [46, 0, 38, 1, 126, 44, 126, 44, 126, 58, 1, 0, 58, 1, 1, 58, 1, 2, 0, 62, 45, 50, 1, 12, 0]
+------------------------------
+- len(instr_set): 25
+==============================
+{1} 0 2e   MVI_L 0x0
+                        --->#139 |S0 Z0 C0| 11111110 | 254, 0xfe 2 
+{1} 2 26   MVI_H 0x1
+                        --->#140 |S0 Z0 C0| 11111110 | 254, 0xfe 4 
+{0} 4 7e   MOV_A,M
+                        --->#141 |S0 Z0 C0| 01101111 | 111, 0x6f 5 
+{0} 5 2c   INR_L
+                        --->#142 |S0 Z0 C0| 01101111 | 111, 0x6f 6 
+{0} 6 7e   MOV_A,M
+                        --->#143 |S0 Z0 C0| 01100011 | 99, 0x63 7 
+{0} 7 2c   INR_L
+                        --->#144 |S0 Z0 C0| 01100011 | 99, 0x63 8 
+{0} 8 7e   MOV_A,M
+                        --->#145 |S0 Z0 C0| 01110100 | 116, 0x74 9 
+{2} 9 3a   LDA 01 00
+LDA addr test 1 0 --> 256 111
+                        --->#146 |S0 Z0 C0| 01101111 | 111, 0x6f 12 
+{2} 12 3a   LDA 01 01
+LDA addr test 1 1 --> 257 99
+                        --->#147 |S0 Z0 C0| 01100011 | 99, 0x63 15 
+{2} 15 3a   LDA 01 02
+LDA addr test 1 2 --> 258 116
+                        --->#148 |S0 Z0 C0| 01110100 | 116, 0x74 18 
+{0} 18 00   NOP
+                        --->#149 |S0 Z0 C0| 01110100 | 116, 0x74 19 
+{1} 19 3e   MVI_A 0x2d
+                        --->#150 |S0 Z0 C0| 00101101 | 45, 0x2d 21 
+{2} 21 32   STA 01 0c
+                        --->#151 |S0 Z0 C0| 00101101 | 45, 0x2d 24 
+{0} 24 00   NOP
+                        --->#152 |S0 Z0 C0| 00101101 | 45, 0x2d 25 
+
+------------------------------
+mem_free: 19760
+================================
+[ system registers ]
+a: 45 0x2d 0b101101
+b: 0  | c: 0
+h: 1  | l: 2
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|0|0|0|0|0|1|0|
+================================
+[ virtual memory ] - (16/32 bytes)
+[111, 99, 116, 111, 112, 117, 115, 32, 116, 101, 115, 116, 45, 0, 0, 0]
+--- hexa:
+0x6f 0x63 0x74 0x6f 0x70 0x75 0x73 0x20 0x74 0x65 0x73 0x74 0x2d 0x0 0x0 0x0 
+--- string:
+octopus test-
+================================
