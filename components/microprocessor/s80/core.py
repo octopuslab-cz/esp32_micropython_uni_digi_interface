@@ -19,22 +19,9 @@ from components.microprocesor.s80.core import Executor
 uP = Executor() # microProcesor
 
 from components.microprocesor.s80.core import Executor, create_hex_program, parse_file
-program = parse_file("example01_s80.asm")
+program = parse_file(uP,"example01_s80.asm")
 hex_program = create_hex_program(program,prn=False)
-
-----------------------------
-
-| | | |A| | | | |
-|S|Z|0|C|0|P|1|C|
-
-sb S  State of Sign bit
-zb Z  State of Zero bit
-   0  always 0
-AC    State of auxiliary Carry bit
-   0  always 0
-pb P  State of Parity bit
-   1  always 1
-cb C  State of Carry bit
+run_hex_code(uP,hex_program,run_delay_ms=10)
 
 """
 
@@ -113,28 +100,9 @@ class Executor:
             print("vm.Err:")
             print("list index out of range")
         print("="*32)
-
-    """
-    def run(self, prg):
-        self.prg = prg
-        while self.ip in prg:
-            self.step(prg[self.ip])
-
-
-    def step(self, line):
-        self.ip += line.size
-        cmd = getattr(self, 'i_' + line.opcode)
-        cmd(line.params)
-        self.cycles += line.size
-
-
-    def jump(self, param):
-        if type(param) != int:
-            raise Exception('Label address not resolved: ' + str(param))
-        self.ip = param
-    """
+  
     
-    #----------------------------------------------------------
+    #---------------------------------------
     def execute(self, inst, param):
         self.loop += 1
         

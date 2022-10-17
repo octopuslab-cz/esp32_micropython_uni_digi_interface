@@ -30,8 +30,8 @@ double_param_instr = {
 
 
 def get_instr_param(instr):
-    add_pc = 0
+    # if (instr not in double_param_instr) and (instr not in zero_param_instr): add_pc = 2
+    add_pc = 2
     if instr in zero_param_instr: add_pc = 1
     if instr in double_param_instr: add_pc = 3
-    if (instr not in double_param_instr) and (instr not in zero_param_instr): add_pc = 2
     return add_pc
