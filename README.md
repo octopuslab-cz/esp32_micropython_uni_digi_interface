@@ -85,6 +85,42 @@ UDI Monitor 0.2 OctopusLAB 2016-22
 
 ```
 
+
+### components/processor/s80 - emulator
+
+```
+s80
+-----------------
+
++-----------+
+|    P C    |   program counter
+|    S P    |   stack pointer
++-----------+
++-----+
+|  A  |  F      accumulator ↑ flags
++-----+-----+
+|  B  |  C  |   system registers
++-----+-----+
+|  H  |  L  |
++-----+-----+
+
+-----------------
+F - Flag:
+
+| | | |A| | | | |
+|S|Z|0|C|0|P|1|C|
+
+sb S  State of Sign bit
+zb Z  State of Zero bit
+   0  always 0
+AC    State of auxiliary Carry bit
+   0  always 0
+pb P  State of Parity bit
+   1  always 1
+cb C  State of Carry bit
+```
+
+
 ---
 
 ## Inspitation and lins
@@ -102,9 +138,5 @@ https://github.com/dj-on-github/py6502
 
 https://github.com/parasj/python-assembler
 
-
-
-
-
-
+http://popolony2k.com.br/xtras/programming/asm/nemesis-lonestar/8080-z80-instruction-set.html
 
