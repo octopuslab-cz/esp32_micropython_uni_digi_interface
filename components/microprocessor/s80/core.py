@@ -38,6 +38,7 @@ class Executor:
         self.debug = True
         
         self.vm = {} # virtual memory
+        self.vm[255] = 0
         self.pc = 0  # programm counter
         self.sp = 0  # stack pointer - single
         
@@ -86,18 +87,24 @@ class Executor:
         vm_sorted = [0] * 16  # simple 16 Bytes
         # vm_sorted = dict(sorted(self.vm.items()))
         vm_offset = 256
-        for addr,data in self.vm.items():
-             vm_sorted[addr-vm_offset] = data
-        print(vm_sorted)
-        print("--- hexa:")
-        for ch in vm_sorted:
-            print(hex(ch),end=" ")
-        print()
-        print("--- string:")
-        for ch in vm_sorted:
+        try:
+            for addr,data in self.vm.items():
+                 vm_sorted[addr-vm_offset] = data
+       
+            print(vm_sorted)
+            print("--- hexa:")
+            for ch in vm_sorted:
+                print(hex(ch),end=" ")
+            print()
+            print("--- string:")
+            for ch in vm_sorted:
             # print(ch)
-            print(chr(ch),end="")
-        print()
+            
+                print(chr(ch),end="")
+            print()
+        except:
+            print("vm.Err:")
+            print("list index out of range")
         print("="*32)
 
     """
@@ -274,7 +281,7 @@ class Executor:
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
-            self.pc = param[0]*256+param[1] - 1 # -1?> todo bettre laber interpret. 0x00 0xFF
+            self.pc = param[0]*256+param[1]
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
                      
         if inst=="RET":
@@ -297,21 +304,21 @@ class Executor:
             else:
                 self.pc += 3
                 
-        # ------------- spec operations --------
+        # ------------- spec subroutines --------
         if inst=="MOV_A,A":
-            print("spec operation - acc:", self.a)
+            print("--> spec. subroutine - acc:", self.a)
             self.pc += 1
             
         if inst=="MOV_C,C":
-            print("spec.op. - pc:", self.pc)
+            print("--> spec.sub. - pc:", self.pc)
             self.pc += 1
             
         if inst=="MOV_D,D":
-            print("spec.op. - display (ToDo) ...")
+            print("--> spec.sub. - display (ToDo) ...")
             self.pc += 1
             
         if inst=="MOV_E,E":
-            print("spec.op. - vitrual memory:", self.vm)
+            print("--> spec.sub. - vitrual memory:", self.vm)
             self.pc += 1  
             
         if(self.debug):

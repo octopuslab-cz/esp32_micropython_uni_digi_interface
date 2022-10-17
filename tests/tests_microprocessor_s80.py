@@ -55,7 +55,7 @@ def run_test(f="example05_s80.asm"):
 
     print("- len(instr_set):", len(hex_program))
     print("="*30)
-    run_hex_code(uP,hex_program,run_delay_ms=100)
+    run_hex_code(uP,hex_program,run_delay_ms=1)
 
     print()
     print("-"*30)
@@ -72,4 +72,5 @@ run_test("example02_s80.asm")
 run_test("example03_s80.asm")
 run_test("example05_s80.asm")
 run_test("example06_s80.asm")
-run_test("example06_s80.asm")
+
+
