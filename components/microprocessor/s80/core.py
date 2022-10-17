@@ -6,6 +6,11 @@ from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
 from components.microprocessor.s80.table import get_instr_param
 
+HW_COMPONETS = True
+
+if HW_COMPONETS:
+    from components.led import Led
+    led = Led(2)
 
 """
 from components.microprocesor.s80.core import Executor
@@ -200,6 +205,7 @@ class Executor:
             addr = param[0]*256 + param[1]
             print("LDA addr test", param[0], param[1], "-->",addr, self.vm.get(addr))
             self.a = self.vm.get(addr)
+            self.zb = 1 if self.a == 0 else 0
             self.pc += 3
             
         if inst=="STA":
@@ -257,6 +263,12 @@ class Executor:
             
         if inst=="ADD":        
             self.a = self.a + param + self.cy
+            
+        if inst=="CPI":
+            compare  = param - self.a
+            self.zb = 1 if compare == 0 else 0
+            self.cb = 1 if compare > 0 else 0
+            self.pc += 2
         
         if inst=="RRC":        
             self.a = self.a >> 1
@@ -304,21 +316,51 @@ class Executor:
             else:
                 self.pc += 3
                 
+        if inst=="JNC":
+            if self.cb == 0:
+                self.pc = param[0]*256+param[1]
+                if(self.debug): print("> jump to ",self.pc)
+            else:
+                self.pc += 3 
+            
+        if inst=="JC":
+            if self.cb == 1:
+                self.pc = param[1] # 0x00 0xFF
+                if(self.debug):
+                     print("> jump to ",self.pc)
+            else:
+                self.pc += 3
+                
         # ------------- spec subroutines --------
         if inst=="MOV_A,A":
-            print("--> spec. subroutine - acc:", self.a)
+            print("--> spec.sub. | acc:", self.a)
+            self.pc += 1
+            
+        if inst=="MOV_B,B":
+            print("--> spec.sub. | vitrual memory:", self.vm)
             self.pc += 1
             
         if inst=="MOV_C,C":
-            print("--> spec.sub. - pc:", self.pc)
+            print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
             
         if inst=="MOV_D,D":
-            print("--> spec.sub. - display (ToDo) ...")
+            print("--> spec.sub. | display (ToDo) ...")
             self.pc += 1
             
         if inst=="MOV_E,E":
-            print("--> spec.sub. - vitrual memory:", self.vm)
+            print("--> spec.sub. | sleep 1 sec. (slEEp)")
+            sleep(1)
+            self.pc += 1  
+            
+        if inst=="MOV_H,H":
+            print("--> spec.sub. - LED_ON (High)")
+            if HW_COMPONETS: led.value(1)
+            self.pc += 1
+            
+        if inst=="MOV_L,L":
+            print("--> spec.sub. - LED_OFF (Low)")
+            if HW_COMPONETS: led.value(0)
             self.pc += 1  
             
         if(self.debug):

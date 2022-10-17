@@ -14,8 +14,6 @@ instructions = {
     'MVI_L':    0x2E,
     'MVI_H':    0x26,
     'MVI_M':    0x36,
-    'JNZ':      0xC2,
-    'JNC':      0xD2,
     'DCR_A':    0x3D,
     'DCR_B':    0x05,
     'DCR_C':    0x0D,
@@ -58,6 +56,10 @@ instructions = {
     'MOV_M,H':  0x74,
     'MOV_M,L':  0x75,
     'JMP':      0xC3,
+    'JZ':       0xCA,
+    'JNZ':      0xC2,
+    'JC':       0xDA,
+    'JNC':      0xD2,
     'CALL':     0xCD,
     'RET':      0xC9,
     'MOV_A,A':  0x7F,
@@ -73,6 +75,7 @@ instructions = {
     'CMP_H':    0xBC,
     'CMP_L':    0xBD,
     'CMP_M':    0xBE,
+    'CPI':      0xFE,
     
     }
 
