@@ -1,5 +1,6 @@
-; example_tempor.ary
-#DATA = "--- octopus"
+; example_s80_cpi
+; org 0x00 (default)
+#DATA = "--- octopus"  ; so it must be (initial string)
 ;
 start:
     MVI_L 0x01 ; init LH
