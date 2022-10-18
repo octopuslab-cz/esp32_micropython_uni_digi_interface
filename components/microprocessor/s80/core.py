@@ -166,6 +166,24 @@ class Executor:
             self.pc += 1
             
         
+        if inst=="INX_B":
+            num = self.c + self.b*256 + 1
+            self.b = int(num/256)
+            self.c = num - self.b*256
+            #self.set_c(self.b)
+            #if self.b > 255: self.b = 0
+            self.pc += 1
+
+            
+        if inst=="INX_H":
+            num = self.l + self.h*256 + 1
+            self.h = int(num/256)
+            self.l = num - self.h*256
+            #self.set_c(self.b)
+            #if self.b > 255: self.b = 0
+            self.pc += 1
+
+        
         if inst=="DCR_A":
             self.a -= 1
             # self.zb = 1 if self.a == 0 else 0
@@ -196,6 +214,24 @@ class Executor:
             self.set_z(self.l)
             self.pc += 1
             
+            
+        if inst=="DCX_B":
+            num = self.c + self.b*256 - 1
+            self.b = int(num/256)
+            self.c = num - self.b*256
+            #self.set_c(self.b)
+            #if self.b > 255: self.b = 0
+            self.pc += 1
+
+            
+        if inst=="DCX_H":
+            num = self.l + self.h*256 - 1
+            self.h = int(num/256)
+            self.l = num - self.h*256
+            #self.set_c(self.b)
+            #if self.b > 255: self.b = 0
+            self.pc += 1
+            
         
         if inst=="LDA":
             # [0]=H [1]=L   0x01 0x03 = 256+3
@@ -211,6 +247,13 @@ class Executor:
             addr = param[0]*256 + param[1]
             self.vm[addr] = self.a
             self.pc += 3
+
+
+        if inst=="CMA":
+            # if bit8: return(bb ^ 0xff)
+            # else: return(~ bb)
+            self.a = self.a ^ 0xff
+            self.pc += 1           
             
          
         if inst=="ANI":
@@ -240,21 +283,25 @@ class Executor:
             
         if inst=="MVI_B":
             self.b = param
+            self.zb = 1 if self.b == 0 else 0
             self.pc += 2
             
     
         if inst=="MVI_C":
             self.c = param
+            self.zb = 1 if self.c == 0 else 0
             self.pc += 2
             
          
         if inst=="MVI_L":
             self.l = param
+            self.zb = 1 if self.l == 0 else 0
             self.pc += 2
             
             
         if inst=="MVI_H":
             self.h = param
+            self.zb = 1 if self.h == 0 else 0
             self.pc += 2
             
             

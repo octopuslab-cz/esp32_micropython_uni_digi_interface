@@ -1,0 +1,129 @@
+log from terminal -->
+--- example_s80_logical2.asm ---
+--------------------------------
+
+; example_s80_logical2
+;
+start:
+; 
+    MVI_A 0b11010111
+    MOV_A,A
+    CMA              ; 1) complement / bit negation
+    MOV_A,A          ; -> 0b00101000
+;
+;                    
+    MVI_B 0          ; 2) test Register - is zero?
+    MVI_A 0
+    ORA_B            ; B or 0 -> Z.bit
+    MOV_A,A
+;
+;
+    MVI_C 0b00110011  
+                     ; 3) mask bit 
+    ANA_C 0b00000100 ; C and MASK (00000010)
+    MOV_A,A          ; 0 -> Z.bit
+;
+;
+end.
+
+
+--------------------------------
+[ two- translator ]
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_A', '0b11010111']
+1  pc: 2  instr: 0x3e  pc+ 2  p1,p2 0b11010111 
+---parts: ['MOV_A,A']
+2  pc: 3  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['CMA']
+3  pc: 4  instr: 0x2f  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+4  pc: 5  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['MVI_B', '0']
+5  pc: 7  instr: 0x6  pc+ 2  p1,p2 0 
+---parts: ['MVI_A', '0']
+6  pc: 9  instr: 0x3e  pc+ 2  p1,p2 0 
+---parts: ['ORA_B']
+7  pc: 10  instr: 0xb0  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+8  pc: 11  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['MVI_C', '0b00110011']
+9  pc: 13  instr: 0xe  pc+ 2  p1,p2 0b00110011 
+---parts: ['ANA_C', '0b00000100']
+10  pc: 14  instr: 0xa1  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+11  pc: 15  instr: 0x7f  pc+ 1  p1,p2  
+12  pc: 15  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'start:': 0}
+- temp_prog. : ['0x3e', '0b11010111', '0x7f', '0x2f', '0x7f', '0x6', '0', '0x3e', '0', '0xb0', '0x7f', '0xe', '0b00110011', '0xa1', '0x7f']
+[ the second pass ] replaces labels with addr.
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+--------------------------------
+- program_num
+[62, 215, 127, 47, 127, 6, 0, 62, 0, 176, 127, 14, 51, 161, 127]
+- program_hex
+3e d7 7f 2f 7f 06 00 3e 00 b0 7f 0e 33 a1 7f 
+--------------------------------
+- len(instr_set): 15
+================================
+0 {1} 3e   MVI_A 0xd7
+                      --->#1 |S0 Z0 C0| 11010111 | 215, 0xd7 2 
+2 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  215 11010111 d7
+    B:  0 00000000 00
+    C:  0 00000000 00
+                      --->#2 |S0 Z0 C0| 11010111 | 215, 0xd7 3 
+3 {0} 2f   CMA
+                      --->#3 |S0 Z0 C0| 00101000 | 40, 0x28 4 
+4 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  40 00101000 28
+    B:  0 00000000 00
+    C:  0 00000000 00
+                      --->#4 |S0 Z0 C0| 00101000 | 40, 0x28 5 
+5 {1} 06   MVI_B 0x0
+                      --->#5 |S0 Z1 C0| 00101000 | 40, 0x28 7 
+7 {1} 3e   MVI_A 0x0
+                      --->#6 |S0 Z1 C0| 00000000 | 0, 0x0 9 
+9 {0} b0   ORA_B
+                      --->#7 |S0 Z1 C0| 00000000 | 0, 0x0 10 
+10 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  0 00000000 00
+    B:  0 00000000 00
+    C:  0 00000000 00
+                      --->#8 |S0 Z1 C0| 00000000 | 0, 0x0 11 
+11 {1} 0e   MVI_C 0x33
+                      --->#9 |S0 Z0 C0| 00000000 | 0, 0x0 13 
+13 {0} a1   ANA_C
+                      --->#10 |S0 Z1 C0| 00000000 | 0, 0x0 14 
+14 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  0 00000000 00
+    B:  0 00000000 00
+    C:  51 00110011 33
+                      --->#11 |S0 Z1 C0| 00000000 | 0, 0x0 15 
+.:. function:  run_hex_code
+--> duration (milis.) --> 1165
+
+--------------------------------
+mem_free: 50096
+================================
+[ system registers ]
+a: 0 0x0 00000000
+b: 0  | c: 51
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
+[ virtual memory ] - (16/32 bytes)
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+--- hexa:
+0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+--- string:
+
+================================
+asm file name: example_s80_logical2.asm
+core_s80 ver. 0.5
