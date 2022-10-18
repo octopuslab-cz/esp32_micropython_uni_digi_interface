@@ -1,0 +1,217 @@
+log from terminal -->
+--- example07_s80.asm ---
+--------------------------------
+
+; example07 spec. HW subroutine 
+;
+    JMP start
+    NOP
+print_acc:
+    MOV_A,A ; 
+    RET
+led0:
+    MOV_L,L ; 
+    RET
+    ;
+led1:
+    MOV_H,H ; 
+    RET
+    ;
+sleep1:
+    MOV_E,E ; 
+    RET
+    ;
+start:
+    NOP
+    CALL led1
+    CALL sleep1
+    CALL led0
+    CALL sleep1
+    NOP
+    CALL led1
+    CALL sleep1
+    CALL led0
+    CALL sleep1 
+    ;
+    NOP ; end    
+end.
+;
+;
+; MOV_A,A - print(acc)   | Accumulator
+; MOV_H,H = led.value(1) | High
+; MOV_L,L = led.value(0) | Low
+; MOV_E,E = sleep(1)     | slEEp
+;
+
+
+--------------------------------
+[ two-pass translator ]
+---parts: ['JMP', 'start']
+---jmp---add 0x00
+0  pc: 3  instr: 0xc3  pc+ 3  p1,p2 start 
+---parts: ['NOP']
+1  pc: 4  instr: 0x0  pc+ 1  p1,p2  
+2  pc: 4  instr: 0  pc+ 0  p1,p2  
+---parts: ['MOV_A,A']
+3  pc: 5  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['RET']
+4  pc: 6  instr: 0xc9  pc+ 1  p1,p2  
+5  pc: 6  instr: 0  pc+ 0  p1,p2  
+---parts: ['MOV_L,L']
+6  pc: 7  instr: 0x6d  pc+ 1  p1,p2  
+---parts: ['RET']
+7  pc: 8  instr: 0xc9  pc+ 1  p1,p2  
+8  pc: 8  instr: 0  pc+ 0  p1,p2  
+---parts: ['MOV_H,H']
+9  pc: 9  instr: 0x64  pc+ 1  p1,p2  
+---parts: ['RET']
+10  pc: 10  instr: 0xc9  pc+ 1  p1,p2  
+11  pc: 10  instr: 0  pc+ 0  p1,p2  
+---parts: ['MOV_E,E']
+12  pc: 11  instr: 0x5b  pc+ 1  p1,p2  
+---parts: ['RET']
+13  pc: 12  instr: 0xc9  pc+ 1  p1,p2  
+14  pc: 12  instr: 0  pc+ 0  p1,p2  
+---parts: ['NOP']
+15  pc: 13  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['CALL', 'led1']
+---jmp---add 0x00
+16  pc: 16  instr: 0xcd  pc+ 3  p1,p2 led1 
+---parts: ['CALL', 'sleep1']
+---jmp---add 0x00
+17  pc: 19  instr: 0xcd  pc+ 3  p1,p2 sleep1 
+---parts: ['CALL', 'led0']
+---jmp---add 0x00
+18  pc: 22  instr: 0xcd  pc+ 3  p1,p2 led0 
+---parts: ['CALL', 'sleep1']
+---jmp---add 0x00
+19  pc: 25  instr: 0xcd  pc+ 3  p1,p2 sleep1 
+---parts: ['NOP']
+20  pc: 26  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['CALL', 'led1']
+---jmp---add 0x00
+21  pc: 29  instr: 0xcd  pc+ 3  p1,p2 led1 
+---parts: ['CALL', 'sleep1']
+---jmp---add 0x00
+22  pc: 32  instr: 0xcd  pc+ 3  p1,p2 sleep1 
+---parts: ['CALL', 'led0']
+---jmp---add 0x00
+23  pc: 35  instr: 0xcd  pc+ 3  p1,p2 led0 
+---parts: ['CALL', 'sleep1']
+---jmp---add 0x00
+24  pc: 38  instr: 0xcd  pc+ 3  p1,p2 sleep1 
+---parts: ['NOP']
+25  pc: 39  instr: 0x0  pc+ 1  p1,p2  
+26  pc: 39  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'sleep1:': 10, 'print_acc:': 4, 'led1:': 8, 'led0:': 6, 'start:': 12}
+- temp_prog. : ['0xc3', 0, 'start', '0x0', '0x7f', '0xc9', '0x6d', '0xc9', '0x64', '0xc9', '0x5b', '0xc9', '0x0', '0xcd', 0, 'led1', '0xcd', 0, 'sleep1', '0xcd', 0, 'led0', '0xcd', 0, 'sleep1', '0x0', '0xcd', 0, 'led1', '0xcd', 0, 'sleep1', '0xcd', 0, 'led0', '0xcd', 0, 'sleep1', '0x0']
+[ the second pass replaces labels with addr. ]
+---label--- start: 12
+start <--- 12
+---label--- led1: 8
+led1 <--- 8
+---label--- sleep1: 10
+sleep1 <--- 10
+---label--- led0: 6
+led0 <--- 6
+---label--- sleep1: 10
+sleep1 <--- 10
+---label--- led1: 8
+led1 <--- 8
+---label--- sleep1: 10
+sleep1 <--- 10
+---label--- led0: 6
+led0 <--- 6
+---label--- sleep1: 10
+sleep1 <--- 10
+- program_num [195, 0, 12, 0, 127, 201, 109, 201, 100, 201, 91, 201, 0, 205, 0, 8, 205, 0, 10, 205, 0, 6, 205, 0, 10, 0, 205, 0, 8, 205, 0, 10, 205, 0, 6, 205, 0, 10, 0]
+--------------------------------
+- len(instr_set): 39
+================================
+0 {2} c3   JMP 00 0c
+                      --->#1 |S0 Z1 C0| 00000000 | 0, 0x0 12 
+12 {0} 00   NOP
+                      --->#2 |S0 Z1 C0| 00000000 | 0, 0x0 13 
+13 {2} cd   CALL 00 08
+                      --->#3 |S0 Z1 C0| 00000000 | 0, 0x0 8 
+8 {0} 64   MOV_H,H
+--> spec.sub. - LED_ON (High)
+                      --->#4 |S0 Z1 C0| 00000000 | 0, 0x0 9 
+9 {0} c9   RET
+                      --->#5 |S0 Z1 C0| 00000000 | 0, 0x0 16 
+16 {2} cd   CALL 00 0a
+                      --->#6 |S0 Z1 C0| 00000000 | 0, 0x0 10 
+10 {0} 5b   MOV_E,E
+--> spec.sub. | sleep 1 sec. (slEEp)
+                      --->#7 |S0 Z1 C0| 00000000 | 0, 0x0 11 
+11 {0} c9   RET
+                      --->#8 |S0 Z1 C0| 00000000 | 0, 0x0 19 
+19 {2} cd   CALL 00 06
+                      --->#9 |S0 Z1 C0| 00000000 | 0, 0x0 6 
+6 {0} 6d   MOV_L,L
+--> spec.sub. - LED_OFF (Low)
+                      --->#10 |S0 Z1 C0| 00000000 | 0, 0x0 7 
+7 {0} c9   RET
+                      --->#11 |S0 Z1 C0| 00000000 | 0, 0x0 22 
+22 {2} cd   CALL 00 0a
+                      --->#12 |S0 Z1 C0| 00000000 | 0, 0x0 10 
+10 {0} 5b   MOV_E,E
+--> spec.sub. | sleep 1 sec. (slEEp)
+                      --->#13 |S0 Z1 C0| 00000000 | 0, 0x0 11 
+11 {0} c9   RET
+                      --->#14 |S0 Z1 C0| 00000000 | 0, 0x0 25 
+25 {0} 00   NOP
+                      --->#15 |S0 Z1 C0| 00000000 | 0, 0x0 26 
+26 {2} cd   CALL 00 08
+                      --->#16 |S0 Z1 C0| 00000000 | 0, 0x0 8 
+8 {0} 64   MOV_H,H
+--> spec.sub. - LED_ON (High)
+                      --->#17 |S0 Z1 C0| 00000000 | 0, 0x0 9 
+9 {0} c9   RET
+                      --->#18 |S0 Z1 C0| 00000000 | 0, 0x0 29 
+29 {2} cd   CALL 00 0a
+                      --->#19 |S0 Z1 C0| 00000000 | 0, 0x0 10 
+10 {0} 5b   MOV_E,E
+--> spec.sub. | sleep 1 sec. (slEEp)
+                      --->#20 |S0 Z1 C0| 00000000 | 0, 0x0 11 
+11 {0} c9   RET
+                      --->#21 |S0 Z1 C0| 00000000 | 0, 0x0 32 
+32 {2} cd   CALL 00 06
+                      --->#22 |S0 Z1 C0| 00000000 | 0, 0x0 6 
+6 {0} 6d   MOV_L,L
+--> spec.sub. - LED_OFF (Low)
+                      --->#23 |S0 Z1 C0| 00000000 | 0, 0x0 7 
+7 {0} c9   RET
+                      --->#24 |S0 Z1 C0| 00000000 | 0, 0x0 35 
+35 {2} cd   CALL 00 0a
+                      --->#25 |S0 Z1 C0| 00000000 | 0, 0x0 10 
+10 {0} 5b   MOV_E,E
+--> spec.sub. | sleep 1 sec. (slEEp)
+                      --->#26 |S0 Z1 C0| 00000000 | 0, 0x0 11 
+11 {0} c9   RET
+                      --->#27 |S0 Z1 C0| 00000000 | 0, 0x0 38 
+38 {0} 00   NOP
+                      --->#28 |S0 Z1 C0| 00000000 | 0, 0x0 39 
+.:. function:  run_hex_code
+--> duration (milis.) --> 4209
+
+--------------------------------
+mem_free: 42912
+================================
+[ system registers ]
+a: 0 0x0 0b0
+b: 0  | c: 0
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
+[ virtual memory ] - (16/32 bytes)
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+--- hexa:
+0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+--- string:
+
+================================
+asm file name: example07_s80.asm
+core_s80 ver. 0.5

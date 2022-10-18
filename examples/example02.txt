@@ -1,3 +1,7 @@
+log from terminal -->
+--- example02_s80.asm ---
+--------------------------------
+
 ; example02_s80 - test jumps
 ; org 0x00 ; (default)
 ;
@@ -24,13 +28,9 @@ loop2:
     NOP
 end.
 
----------------------------------
 
-
-log from terminal:
-
+--------------------------------
 [ two-pass translator ]
-- open file: example02_s80.asm
 0  pc: 0  instr: 0  pc+ 0  p1,p2  
 ---parts: ['MVI_A', '0x07']
 1  pc: 2  instr: 0x3e  pc+ 2  p1,p2 0x07 
@@ -75,9 +75,9 @@ loop1 <--- 3
 ---label--- loop2: 13
 loop2 <--- 13
 - program_num [62, 7, 71, 0, 61, 194, 0, 3, 0, 62, 1, 6, 7, 0, 7, 5, 194, 0, 13, 0, 62, 9, 0]
-------------------------------
-len(instr_set): 23
-==============================
+--------------------------------
+- len(instr_set): 23
+================================
 0 {1} 3e   MVI_A 0x7
                       --->#1 |S0 Z0 C0| 00000111 | 7, 0x7 2 
 2 {0} 47   MOV_B,A
@@ -193,10 +193,10 @@ len(instr_set): 23
 22 {0} 00   NOP
                       --->#57 |S0 Z0 C0| 00001001 | 9, 0x9 23 
 .:. function:  run_hex_code
---> duration (milis.) --> 848
+--> duration (milis.) --> 416
 
-------------------------------
-mem_free: 26464
+--------------------------------
+mem_free: 32784
 ================================
 [ system registers ]
 a: 9 0x9 0b1001
@@ -213,4 +213,5 @@ h: 0  | l: 0
 --- string:
 
 ================================
-core_s80 ver. 0.3
+asm file name: example02_s80.asm
+core_s80 ver. 0.5

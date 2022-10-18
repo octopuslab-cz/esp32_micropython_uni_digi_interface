@@ -1,4 +1,5 @@
-; example07 spec operation HW
+; example07 spec. HW subroutine 
+;
     JMP start
     NOP
 print_acc:
@@ -30,3 +31,10 @@ start:
     ;
     NOP ; end    
 end.
+;
+;
+; MOV_A,A - print(acc)   | Accumulator
+; MOV_H,H = led.value(1) | High
+; MOV_L,L = led.value(0) | Low
+; MOV_E,E = sleep(1)     | slEEp
+;
