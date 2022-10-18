@@ -262,6 +262,16 @@ class Executor:
             self.zb = 1 if self.b == 0 else 0
             self.pc += 2
             
+        if inst=="LXI_B":
+            self.c = param[0]
+            self.b = param[1] 
+            self.pc += 3
+            
+        if inst=="LXI_H": # H byte3 / L byte2 ??? I L H
+            self.h = param[0]
+            self.l = param[1] 
+            self.pc += 3
+            
         if inst=="MVI_C":
             self.c = param
             self.zb = 1 if self.c == 0 else 0
@@ -277,12 +287,18 @@ class Executor:
             self.zb = 1 if self.h == 0 else 0
             self.pc += 2
             
+        if inst=="MVI_M":
+            self.vm[self.h*256+self.l] = param
+            self.zb = 1 if param == 0 else 0
+            self.pc += 2    
+        
         if inst=="ANA_B":
             self.a = self.a & self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
             
         if inst=="ANA_C":
+            print(self.c , self.a & self.c)
             self.a = self.a & self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
@@ -407,11 +423,12 @@ class Executor:
                 
         # ------------- spec subroutines --------
         if inst=="MOV_A,A":
-            num = self.c + self.b*256
+            num_bc = self.c + self.b*256
+            num_lh = self.l + self.h*256
             print("--> R ","DEC BIN    HEX (B_C)" )
             print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
-            print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num)+")")
-            print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c))
+            print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
+            print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
             self.pc += 1
             
         if inst=="MOV_B,B":
@@ -498,7 +515,7 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
                     i_hex = hex(instr.instructions[i1])
                     program.append(hex(int(i_hex)))
                     
-                    if i1 =="LDA" or i1 =="STA":
+                    if i1 =="LDA" or i1 =="STA" or i1 == "LXI_B" or i1 == "LXI_H": # ToDo in list
                         print("-LD/ST-A-add",parts[1],parts[2])
                         # program.append(0x0) # simple jmp to (0 addr)
                         program.append(parts[1])

@@ -31,7 +31,7 @@ zero_param_instr = {
 
 # instr: "address"
 double_param_instr = {
- 'STA','LDA','SHLD','LHLD',
+ 'STA','LDA','SHLD','LHLD','LXI_B','LXI_H',
  'JMP','JC','JNC','JZ','JNZ','JP','JM','JPE','JPO',
  'CALL','CC','CNC','CZ','CNZ','CP','CM','CPE','CPO',
 }
