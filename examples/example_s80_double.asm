@@ -1,10 +1,5 @@
 ; example_s80_inx pair B_C / H_L
 start:
-    MVI_A 6
-    MOV_A,A
-    CMA
-    MOV_A,A
-;
     MVI_A 6          ; init loop1
     MVI_C 253  ;
 loop1:               ; increment

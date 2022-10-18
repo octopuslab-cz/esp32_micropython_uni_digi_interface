@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.5" # 2022/10/18
+__version__ = "0.5.1" # 2022/10/18 /628
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -120,11 +120,9 @@ class Executor:
         
         if inst=="NOP":
             self.pc += 1
-            
-        
+                 
         if inst=="HLT":
             self.is_running = False
-            
         
         if inst=="INR_A":
             self.a += 1
@@ -137,34 +135,29 @@ class Executor:
             self.set_z(self.a) #q#?
             self.pc += 1
             
-             
         if inst=="INR_B":
             self.b += 1
             self.set_c(self.b)
             if self.b > 255: self.b = 0
             self.pc += 1
-            
                 
         if inst=="INR_C":
             self.c += 1
             self.set_c(self.c)
             if self.c > 255: self.c = 0
             self.pc += 1
-            
                 
         if inst=="INR_H":
             self.h += 1
             self.set_c(self.h)
             if self.h > 255: self.h = 0
             self.pc += 1
-            
                 
         if inst=="INR_L":
             self.l += 1
             self.set_c(self.l)
             if self.l > 255: self.l = 0
             self.pc += 1
-            
         
         if inst=="INX_B":
             num = self.c + self.b*256 + 1
@@ -174,7 +167,6 @@ class Executor:
             #if self.b > 255: self.b = 0
             self.pc += 1
 
-            
         if inst=="INX_H":
             num = self.l + self.h*256 + 1
             self.h = int(num/256)
@@ -182,38 +174,32 @@ class Executor:
             #self.set_c(self.b)
             #if self.b > 255: self.b = 0
             self.pc += 1
-
         
         if inst=="DCR_A":
             self.a -= 1
             # self.zb = 1 if self.a == 0 else 0
             self.set_z(self.a)
-            self.pc += 1
-            
+            self.pc += 1            
         
         if inst=="DCR_B":
             self.b -= 1
             self.set_z(self.b)
             self.pc += 1
             
-        
         if inst=="DCR_C":
             self.c -= 1
             self.set_z(self.c)
             self.pc += 1
-            
             
         if inst=="DCR_H":
             self.h -= 1
             self.set_z(self.h)
             self.pc += 1
             
-            
         if inst=="DCR_L":
             self.l -= 1
             self.set_z(self.l)
             self.pc += 1
-            
             
         if inst=="DCX_B":
             num = self.c + self.b*256 - 1
@@ -223,7 +209,6 @@ class Executor:
             #if self.b > 255: self.b = 0
             self.pc += 1
 
-            
         if inst=="DCX_H":
             num = self.l + self.h*256 - 1
             self.h = int(num/256)
@@ -231,8 +216,7 @@ class Executor:
             #self.set_c(self.b)
             #if self.b > 255: self.b = 0
             self.pc += 1
-            
-        
+                    
         if inst=="LDA":
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0]*256 + param[1]
@@ -241,125 +225,103 @@ class Executor:
             self.zb = 1 if self.a == 0 else 0
             self.pc += 3
             
-            
         if inst=="STA":
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0]*256 + param[1]
             self.vm[addr] = self.a
             self.pc += 3
 
-
         if inst=="CMA":
             # if bit8: return(bb ^ 0xff)
             # else: return(~ bb)
             self.a = self.a ^ 0xff
             self.pc += 1           
-            
-         
+                     
         if inst=="ANI":
-            #print("--- ANI ---",bin(self.a), bin(param), bin(self.a & param))
             self.a = self.a & param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
-            
             
         if inst=="ORI":
             self.a = self.a | param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
             
-        
         if inst=="XRI":
             self.a = self.a ^ param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2 
         
-            
         if inst=="MVI_A":
             self.a = param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
-            
-            
+                
         if inst=="MVI_B":
             self.b = param
             self.zb = 1 if self.b == 0 else 0
             self.pc += 2
             
-    
         if inst=="MVI_C":
             self.c = param
             self.zb = 1 if self.c == 0 else 0
             self.pc += 2
             
-         
         if inst=="MVI_L":
             self.l = param
             self.zb = 1 if self.l == 0 else 0
             self.pc += 2
-            
             
         if inst=="MVI_H":
             self.h = param
             self.zb = 1 if self.h == 0 else 0
             self.pc += 2
             
-            
         if inst=="ANA_B":
             self.a = self.a & self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
             
-        
         if inst=="ANA_C":
             self.a = self.a & self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
-            
             
         if inst=="ORA_B":
             self.a = self.a | self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
             
-        
         if inst=="ORA_C":
             self.a = self.a | self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
-            
             
         if inst=="XRA_B":
             self.a = self.a ^ self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
             
-        
         if inst=="XRA_C":
             self.a = self.a ^ self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
             
-            
         if inst=="MOV_B,A":
             self.b = self.a
             self.pc += 1
-            
             
         if inst=="MOV_A,B":
             self.a = self.b
             self.pc += 1
             
-    
         if inst=="MOV_C,A":
             self.c = self.a
             self.pc += 1
             
-    
         if inst=="MOV_A,C":
             self.a = self.c
             self.pc += 1
-            
                     
         if inst=="MOV_A,M":
             addr = self.h*256+self.l
@@ -367,11 +329,9 @@ class Executor:
             #print("MOV_A,M addr test", self.h, self.l, "-->",addr,self.vm.get(addr))
             self.pc += 1
             
-            
         if inst=="MOV_M,A":
             self.vm[self.h*256+self.l] = self.a
             self.pc += 1
-            
             
         if inst=="ADD_A":        
             #self.a = self.a + param + self.cy  #q#
@@ -380,7 +340,6 @@ class Executor:
             if self.a > 255: self.a = self.a - 256 
             self.pc += 2
             
-            
         if inst=="CPI":
             compare  = param - self.a
             #self.zb = 1 if compare == 0 else 0
@@ -388,7 +347,6 @@ class Executor:
             self.cb = 1 if compare > 0 else 0
             self.pc += 2
             
-        
         if inst=="RRC":        
             self.a = self.a >> 1
             self.pc += 1
@@ -398,31 +356,26 @@ class Executor:
                 self.cb = 1
             """
                         
-        
         if inst=="RLC":        
             self.a = self.a << 1
             self.pc += 1
             
-        
         #self.cy = self.acc >> 4
         #self.acc &= 0xF
             
         if inst=="JMP":
             self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
             if(self.debug):print("> JMP to ",self.pc)
-            
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
             self.pc = param[0]*256+param[1]
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
-            
                      
         if inst=="RET":
             self.pc = self.sp # stack
             if(self.debug): print("> RET to ",self.pc)
             self.sp = 0
-            
             
         if inst=="JNZ":
             if self.zb == 0:
@@ -431,14 +384,12 @@ class Executor:
             else:
                 self.pc += 3
             
-            
         if inst=="JZ":
             if self.zb == 1:
                 self.pc = param[1] # 0x00 0xFF
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            
                 
         if inst=="JNC":
             if self.cb == 0:
@@ -447,57 +398,49 @@ class Executor:
             else:
                 self.pc += 3
             
-            
         if inst=="JC":
             if self.cb == 1:
                 self.pc = param[1] # 0x00 0xFF
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            
                 
         # ------------- spec subroutines --------
         if inst=="MOV_A,A":
-            print("--> R ","DEC  BIN    HEX" )
+            num = self.c + self.b*256
+            print("--> R ","DEC BIN    HEX (B_C)" )
             print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
-            print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b))
+            print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c))
             self.pc += 1
-            
             
         if inst=="MOV_B,B":
             print("--> spec.sub. | vitrual memory:", self.vm)
             print("       ", self.vm)
             self.pc += 1
-            
-            
+               
         if inst=="MOV_C,C":
             print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
             
-            
         if inst=="MOV_D,D":
             print("--> spec.sub. | display (ToDo) ...")
             self.pc += 1
-            
             
         if inst=="MOV_E,E":
             print("--> spec.sub. | sleep 1 sec. (slEEp)")
             sleep(1)
             self.pc += 1  
             
-        
         if inst=="MOV_H,H":
             print("--> spec.sub. - LED_ON (High)")
             if HW_COMPONETS: led.value(1)
             self.pc += 1
             
-            
         if inst=="MOV_L,L":
             print("--> spec.sub. - LED_OFF (Low)")
             if HW_COMPONETS: led.value(0)
             self.pc += 1
-            
             
         if(True): # /debug
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
