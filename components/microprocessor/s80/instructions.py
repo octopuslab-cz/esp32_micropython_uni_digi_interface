@@ -3,12 +3,13 @@
 # only the most important commands
 
 instructions = {
-'NOP':      0x00,
-'HLT':      0x76,
-'LDA':      0x3A,
+ 'NOP':      0x00,
+ 'HLT':      0x76,
+ 'LDA':      0x3A,
  'STA':      0x32,
  'RLC':      0x07,
  'RRC':      0x0F,
+ 'ADD_A':    0x87,
  'MVI_A':    0x3E,
  'MVI_B':    0x06,
  'MVI_C':    0x0E,

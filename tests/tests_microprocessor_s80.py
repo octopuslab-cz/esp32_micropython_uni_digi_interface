@@ -81,4 +81,4 @@ run_test("example07_s80.asm")
 run_test("example08_s80.asm")
 """
 
-run_test("example07_s80.asm")
+run_test("example01_s80.asm")

@@ -59,10 +59,19 @@ class Executor:
         self.loop = 0
         self.is_running = True
 
+    
     def set_acc(self, value): # for test
         self.a = value
         self.zb = 1 if self.a == 0 else 0
-            
+        
+
+    def set_z(self, data):
+        self.zb = 1 if data == 0 else 0
+
+
+    def set_c(self, data):
+        self.cb = 1 if data > 255 else 0
+                    
             
     def print_regs(self): # dec, hex, bin
         print("="*32)
@@ -110,81 +119,82 @@ class Executor:
         
         if inst=="NOP":
             self.pc += 1
-            pass
+            
         
         if inst=="HLT":
             self.is_running = False
-            pass
+            
         
         if inst=="INR_A":
             self.a += 1
+            #if self.a > 255:
+            #    self.a = 0
+            #    self.cb = 1
+            self.set_c(self.a)
+            if self.a > 255: self.a = 0
+            
+            self.set_z(self.a) #q#?
             self.pc += 1
-            if self.a > 255:
-                self.a = 0
-                self.cb = 1
-            pass 
+            
              
         if inst=="INR_B":
             self.b += 1
+            self.set_c(self.b)
+            if self.b > 255: self.b = 0
             self.pc += 1
-            if self.b > 255:
-                self.b = 0
-                self.cb = 1
-            pass
+            
                 
         if inst=="INR_C":
             self.c += 1
+            self.set_c(self.c)
+            if self.c > 255: self.c = 0
             self.pc += 1
-            if self.c > 255:
-                self.c = 0
-                self.cb = 1
-            pass
+            
                 
         if inst=="INR_H":
             self.h += 1
+            self.set_c(self.h)
+            if self.h > 255: self.h = 0
             self.pc += 1
-            if self.h > 255:
-                self.h = 0
-                self.cb = 1
-            pass
+            
                 
         if inst=="INR_L":
             self.l += 1
+            self.set_c(self.l)
+            if self.l > 255: self.l = 0
             self.pc += 1
-            if self.l > 255:
-                self.l = 0
-                self.cb = 1
-            pass
+            
         
         if inst=="DCR_A":
             self.a -= 1
+            # self.zb = 1 if self.a == 0 else 0
+            self.set_z(self.a)
             self.pc += 1
-            self.zb = 1 if self.a == 0 else 0
-            pass
+            
         
         if inst=="DCR_B":
             self.b -= 1
+            self.set_z(self.b)
             self.pc += 1
-            self.zb = 1 if self.b == 0 else 0
-            pass
+            
         
         if inst=="DCR_C":
             self.c -= 1
+            self.set_z(self.c)
             self.pc += 1
-            self.zb = 1 if self.c == 0 else 0
-            pass
+            
             
         if inst=="DCR_H":
             self.h -= 1
+            self.set_z(self.h)
             self.pc += 1
-            self.zb = 1 if self.h == 0 else 0
-            pass
+            
             
         if inst=="DCR_L":
             self.l -= 1
+            self.set_z(self.l)
             self.pc += 1
-            self.zb = 1 if self.l == 0 else 0
-            pass
+            
         
         if inst=="LDA":
             # [0]=H [1]=L   0x01 0x03 = 256+3
@@ -193,83 +203,88 @@ class Executor:
             self.a = self.vm.get(addr)
             self.zb = 1 if self.a == 0 else 0
             self.pc += 3
-            pass
+            
             
         if inst=="STA":
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0]*256 + param[1]
             self.vm[addr] = self.a
             self.pc += 3
-            pass
+            
             
         if inst=="MVI_A":
             self.a = param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
-            pass
+            
             
         if inst=="MVI_B":
             self.b = param
             self.pc += 2
-            pass
+            
     
         if inst=="MVI_C":
             self.c = param
             self.pc += 2
-            pass
+            
          
         if inst=="MVI_L":
             self.l = param
             self.pc += 2
-            pass
+            
             
         if inst=="MVI_H":
             self.h = param
             self.pc += 2
-            pass
+            
             
         if inst=="MOV_B,A":
             self.b = self.a
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_A,B":
             self.a = self.b
             self.pc += 1
-            pass
+            
     
         if inst=="MOV_C,A":
             self.c = self.a
             self.pc += 1
-            pass
+            
     
         if inst=="MOV_A,C":
             self.a = self.c
             self.pc += 1
-            pass
+            
                     
         if inst=="MOV_A,M":
             addr = self.h*256+self.l
             self.a = self.vm.get(addr)
             #print("MOV_A,M addr test", self.h, self.l, "-->",addr,self.vm.get(addr))
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_M,A":
             self.vm[self.h*256+self.l] = self.a
             self.pc += 1
-            pass
             
-        if inst=="ADD":        
-            self.a = self.a + param + self.cy
-            pass
+            
+        if inst=="ADD_A":        
+            #self.a = self.a + param + self.cy  #q#
+            self.a = self.a + param
+            self.set_c(self.a)
+            if self.a > 255: self.a = self.a - 256 
+            self.pc += 2
+            
             
         if inst=="CPI":
             compare  = param - self.a
-            self.zb = 1 if compare == 0 else 0
+            #self.zb = 1 if compare == 0 else 0
+            self.set_c(compare)
             self.cb = 1 if compare > 0 else 0
             self.pc += 2
-            pass
+            
         
         if inst=="RRC":        
             self.a = self.a >> 1
@@ -279,12 +294,12 @@ class Executor:
                 self.a = 0
                 self.cb = 1
             """
-            pass
+                        
         
         if inst=="RLC":        
             self.a = self.a << 1
             self.pc += 1
-            pass
+            
         
         #self.cy = self.acc >> 4
         #self.acc &= 0xF
@@ -292,19 +307,19 @@ class Executor:
         if inst=="JMP":
             self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
             if(self.debug):print("> JMP to ",self.pc)
-            pass
+            
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
             self.pc = param[0]*256+param[1]
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
-            pass
+            
                      
         if inst=="RET":
             self.pc = self.sp # stack
             if(self.debug): print("> RET to ",self.pc)
             self.sp = 0
-            pass
+            
             
         if inst=="JNZ":
             if self.zb == 0:
@@ -312,7 +327,7 @@ class Executor:
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            pass
+            
             
         if inst=="JZ":
             if self.zb == 1:
@@ -320,7 +335,7 @@ class Executor:
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            pass
+            
                 
         if inst=="JNC":
             if self.cb == 0:
@@ -328,7 +343,7 @@ class Executor:
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            pass
+            
             
         if inst=="JC":
             if self.cb == 1:
@@ -336,46 +351,46 @@ class Executor:
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
-            pass
+            
                 
         # ------------- spec subroutines --------
         if inst=="MOV_A,A":
             print("--> spec.sub. | acc:", self.a)
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_B,B":
             print("--> spec.sub. | vitrual memory:", self.vm)
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_C,C":
             print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_D,D":
             print("--> spec.sub. | display (ToDo) ...")
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_E,E":
             print("--> spec.sub. | sleep 1 sec. (slEEp)")
             sleep(1)
             self.pc += 1  
-            pass
+            
         
         if inst=="MOV_H,H":
             print("--> spec.sub. - LED_ON (High)")
             if HW_COMPONETS: led.value(1)
             self.pc += 1
-            pass
+            
             
         if inst=="MOV_L,L":
             print("--> spec.sub. - LED_OFF (Low)")
             if HW_COMPONETS: led.value(0)
             self.pc += 1
-            pass
+            
             
         if(True): # /debug
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
@@ -400,7 +415,7 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
         print()
         print("-"*32)
         
-    print("[ two-pass translator ]")
+    print("[ two- translator ]")
     
     l=0
     for line in fs.splitlines():
@@ -463,7 +478,7 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
     
     print("- temp_labels:",labels)
     print("- temp_prog. :",program)
-    print("[ the second pass replaces labels with addr. ]")
+    print("[ the second  replaces labels with addr. ]")
     
     i=0
     
