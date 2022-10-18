@@ -212,6 +212,25 @@ class Executor:
             self.vm[addr] = self.a
             self.pc += 3
             
+         
+        if inst=="ANI":
+            #print("--- ANI ---",bin(self.a), bin(param), bin(self.a & param))
+            self.a = self.a & param
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 2
+            
+            
+        if inst=="ORI":
+            self.a = self.a | param
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 2
+            
+        
+        if inst=="XRI":
+            self.a = self.a ^ param
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 2 
+        
             
         if inst=="MVI_A":
             self.a = param
@@ -237,6 +256,42 @@ class Executor:
         if inst=="MVI_H":
             self.h = param
             self.pc += 2
+            
+            
+        if inst=="ANA_B":
+            self.a = self.a & self.b
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+            
+        
+        if inst=="ANA_C":
+            self.a = self.a & self.c
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1    
+            
+            
+        if inst=="ORA_B":
+            self.a = self.a | self.b
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+            
+        
+        if inst=="ORA_C":
+            self.a = self.a | self.c
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+            
+            
+        if inst=="XRA_B":
+            self.a = self.a ^ self.b
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+            
+        
+        if inst=="XRA_C":
+            self.a = self.a ^ self.c
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1    
             
             
         if inst=="MOV_B,A":
@@ -427,6 +482,9 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
         
         # clean up    
         clean_line = line.split(";")[0].strip()
+        clean_line = clean_line.replace('   ',' ')  # 123456 > 12 | 12345 > 123 | 1234 > 12
+        clean_line = clean_line.replace('  ',' ')   # 123 > 12
+        clean_line = clean_line.replace('  ',' ')
         
         # data_string
         index_vm = 256  # start data virtual memory FF+1

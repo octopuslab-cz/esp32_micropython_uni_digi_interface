@@ -1,0 +1,153 @@
+log from terminal -->
+--- example_s80_logical.asm ---
+--------------------------------
+
+; example_s80_logical
+;
+start:
+    MVI_A 0b01010101 ;
+    ANI   0b00001111 ; and
+    MOV_C,A     
+    MVI_A 0b01010101 ;
+    MVI_B 0b00001111 ; 
+    MOV_A,A          ; spec.subroutine --> reg.info ABC
+;
+    MVI_A 0b01010101 ;
+    MVI_B 0b00001111 ;
+    ;ORI   0b00001111; or
+    ORA_B            ; a = a or b
+    MOV_C,A          ; c = a    
+    MVI_A 0b01010101 ;     
+    MOV_A,A          ; spec.subroutine --> reg.info ABC
+;    
+    MVI_A 0b01010101 ;
+    XRI   0b00001111 ; xor
+    MOV_C,A     
+    MVI_A 0b01010101 ;
+    MVI_B 0b00001111 ; 
+    MOV_A,A          ; spec.subroutine --> reg.info ABC
+; 
+;
+end.
+
+
+--------------------------------
+[ two- translator ]
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+1  pc: 2  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['ANI', '0b00001111']
+2  pc: 4  instr: 0xe6  pc+ 2  p1,p2 0b00001111 
+---parts: ['MOV_C,A']
+3  pc: 5  instr: 0x4f  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+4  pc: 7  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['MVI_B', '0b00001111']
+5  pc: 9  instr: 0x6  pc+ 2  p1,p2 0b00001111 
+---parts: ['MOV_A,A']
+6  pc: 10  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+7  pc: 12  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['MVI_B', '0b00001111']
+8  pc: 14  instr: 0x6  pc+ 2  p1,p2 0b00001111 
+---parts: ['ORA_B']
+9  pc: 15  instr: 0xb0  pc+ 1  p1,p2  
+---parts: ['MOV_C,A']
+10  pc: 16  instr: 0x4f  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+11  pc: 18  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['MOV_A,A']
+12  pc: 19  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+13  pc: 21  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['XRI', '0b00001111']
+14  pc: 23  instr: 0xee  pc+ 2  p1,p2 0b00001111 
+---parts: ['MOV_C,A']
+15  pc: 24  instr: 0x4f  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b01010101']
+16  pc: 26  instr: 0x3e  pc+ 2  p1,p2 0b01010101 
+---parts: ['MVI_B', '0b00001111']
+17  pc: 28  instr: 0x6  pc+ 2  p1,p2 0b00001111 
+---parts: ['MOV_A,A']
+18  pc: 29  instr: 0x7f  pc+ 1  p1,p2  
+19  pc: 29  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'start:': 0}
+- temp_prog. : ['0x3e', '0b01010101', '0xe6', '0b00001111', '0x4f', '0x3e', '0b01010101', '0x6', '0b00001111', '0x7f', '0x3e', '0b01010101', '0x6', '0b00001111', '0xb0', '0x4f', '0x3e', '0b01010101', '0x7f', '0x3e', '0b01010101', '0xee', '0b00001111', '0x4f', '0x3e', '0b01010101', '0x6', '0b00001111', '0x7f']
+[ the second pass ] replaces labels with addr.
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+--------------------------------
+- program_num
+[62, 85, 230, 15, 79, 62, 85, 6, 15, 127, 62, 85, 6, 15, 176, 79, 62, 85, 127, 62, 85, 238, 15, 79, 62, 85, 6, 15, 127]
+- program_hex
+3e 55 e6 0f 4f 3e 55 06 0f 7f 3e 55 06 0f b0 4f 3e 55 7f 3e 55 ee 0f 4f 3e 55 06 0f 7f 
+--------------------------------
+- len(instr_set): 29
+================================
+0 {1} 3e   MVI_A 0x55
+                      --->#1 |S0 Z0 C0| 01010101 | 85, 0x55 2 
+2 {1} e6   ANI 0xf
+                      --->#2 |S0 Z0 C0| 00000101 | 5, 0x5 4 
+4 {0} 4f   MOV_C,A
+                      --->#3 |S0 Z0 C0| 00000101 | 5, 0x5 5 
+5 {1} 3e   MVI_A 0x55
+                      --->#4 |S0 Z0 C0| 01010101 | 85, 0x55 7 
+7 {1} 06   MVI_B 0xf
+                      --->#5 |S0 Z0 C0| 01010101 | 85, 0x55 9 
+9 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  85 01010101 55
+    B:  15 00001111 0f
+    C:  5  00000101 05
+                      --->#6 |S0 Z0 C0| 01010101 | 85, 0x55 10 
+10 {1} 3e   MVI_A 0x55
+                      --->#7 |S0 Z0 C0| 01010101 | 85, 0x55 12 
+12 {1} 06   MVI_B 0xf
+                      --->#8 |S0 Z0 C0| 01010101 | 85, 0x55 14 
+14 {0} b0   ORA_B
+                      --->#9 |S0 Z0 C0| 01011111 | 95, 0x5f 15 
+15 {0} 4f   MOV_C,A
+                      --->#10 |S0 Z0 C0| 01011111 | 95, 0x5f 16 
+16 {1} 3e   MVI_A 0x55
+                      --->#11 |S0 Z0 C0| 01010101 | 85, 0x55 18 
+18 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  85 01010101 55
+    B:  15 00001111 0f
+    C:  95 01011111 5f
+                      --->#12 |S0 Z0 C0| 01010101 | 85, 0x55 19 
+19 {1} 3e   MVI_A 0x55
+                      --->#13 |S0 Z0 C0| 01010101 | 85, 0x55 21 
+21 {1} ee   XRI 0xf
+                      --->#14 |S0 Z0 C0| 01011010 | 90, 0x5a 23 
+23 {0} 4f   MOV_C,A
+                      --->#15 |S0 Z0 C0| 01011010 | 90, 0x5a 24 
+24 {1} 3e   MVI_A 0x55
+                      --->#16 |S0 Z0 C0| 01010101 | 85, 0x55 26 
+26 {1} 06   MVI_B 0xf
+                      --->#17 |S0 Z0 C0| 01010101 | 85, 0x55 28 
+28 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  85 01010101 55
+    B:  15 00001111 0f
+    C:  90 01011010 5a
+                      --->#18 |S0 Z0 C0| 01010101 | 85, 0x55 29 
+.:. function:  run_hex_code
+--> duration (milis.) --> 1897
+
+--------------------------------
+mem_free: 43776
+================================
+[ system registers ]
+a: 85 0x55 01010101
+b: 15  | c: 90
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|0|0|0|0|0|1|0|
+================================
+[ virtual memory ] - (16/32 bytes)
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+--- hexa:
+0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+--- string:

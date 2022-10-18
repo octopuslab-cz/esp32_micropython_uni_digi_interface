@@ -17,7 +17,15 @@ zero_param_instr = {
  'MOV_A,B','MOV_C,B','MOV_L,B','MOV_H,B','MOV_M,B',
  'MOV_A,C','MOV_B,C','MOV_L,C','MOV_H,C','MOV_M,C',
  'MOV_A,A','MOV_B,B','MOV_C,C','MOV_D,D','MOV_E,E','MOV_L,L','MOV_H,H','MOV_A,M',
- 'INR_A', 'INR_B', 'INR_C', 'INR_L','INR_H','DCR_A', 'DCR_B', 'DCR_C','DCR_L','DCR_H',
+ 'INR_A','INR_B','INR_C','INR_L','INR_H',
+ 'DCR_A','DCR_B','DCR_C','DCR_L','DCR_H',
+ 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M',
+ 'ADC_A','ADC_B','ADC_C','ADC_H','ADC_L','ADC_M',
+ 'SUB_A','SUB_B','SUB_C','SUB_H','SUB_L','SUB_M',
+ 'SBB_A','SBB_B','SBB_C','SBB_H','SBB_L','SBB_M',
+ 'ANA_A','ANA_B','ANA_C','ANA_H','ANA_L','ANA_M',
+ 'XRA_A','XRA_B','XRA_C','XRA_H','XRA_L','XRA_M',
+ 'ORA_A','ORA_B','ORA_C','ORA_H','ORA_L','ORA_M', 
 }
 
 

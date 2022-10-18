@@ -1,0 +1,166 @@
+log from terminal -->
+--- example_s80_cpi.asm ---
+--------------------------------
+
+; example_s80_cpi
+; org 0x00 ; (default)
+#DATA = "--- octopus"  ; so it must be (initial string)
+;
+start:
+    MVI_L 0x01 ; init LH
+    MVI_H 0x01
+    MVI_A 88 ; "X"
+    MOV_M,A
+;   e=69 g=71 s=83 x=88
+    MVI_A 0x07 ; note
+    CPI 0x07 
+    NOP
+; |S|Z|0|C|0|P|1|C|
+; |0|1|0|0|0|0|1|0| cp = a (z)
+;
+    CPI 0x08 
+    NOP
+; |S|Z|0|C|0|P|1|C|
+; |0|0|0|0|0|0|1|1| cp > a (c)
+;
+   JC is_greater 
+   JZ is_equal
+   JMP end
+;
+is_greater:
+    MVI_A 71 ; "G"
+    MOV_M,A
+    JMP end
+;
+is_equal:
+    MVI_A 69 ; "E"
+    MOV_M,A
+    JMP end
+;
+smaller:
+;
+end:
+;
+
+--------------------------------
+[ two- translator ]
+data_string: --- octopus
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+1  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_L', '0x01']
+2  pc: 2  instr: 0x2e  pc+ 2  p1,p2 0x01 
+---parts: ['MVI_H', '0x01']
+3  pc: 4  instr: 0x26  pc+ 2  p1,p2 0x01 
+---parts: ['MVI_A', '88']
+4  pc: 6  instr: 0x3e  pc+ 2  p1,p2 88 
+---parts: ['MOV_M,A']
+5  pc: 7  instr: 0x77  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0x07']
+6  pc: 9  instr: 0x3e  pc+ 2  p1,p2 0x07 
+---parts: ['CPI', '0x07']
+7  pc: 11  instr: 0xfe  pc+ 2  p1,p2 0x07 
+---parts: ['NOP']
+8  pc: 12  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['CPI', '0x08']
+9  pc: 14  instr: 0xfe  pc+ 2  p1,p2 0x08 
+---parts: ['NOP']
+10  pc: 15  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['JC', 'is_greater']
+---jmp---add 0x00
+11  pc: 18  instr: 0xda  pc+ 3  p1,p2 is_greater 
+---parts: ['JZ', 'is_equal']
+---jmp---add 0x00
+12  pc: 21  instr: 0xca  pc+ 3  p1,p2 is_equal 
+---parts: ['JMP', 'end']
+---jmp---add 0x00
+13  pc: 24  instr: 0xc3  pc+ 3  p1,p2 end 
+14  pc: 24  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_A', '71']
+15  pc: 26  instr: 0x3e  pc+ 2  p1,p2 71 
+---parts: ['MOV_M,A']
+16  pc: 27  instr: 0x77  pc+ 1  p1,p2  
+---parts: ['JMP', 'end']
+---jmp---add 0x00
+17  pc: 30  instr: 0xc3  pc+ 3  p1,p2 end 
+18  pc: 30  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_A', '69']
+19  pc: 32  instr: 0x3e  pc+ 2  p1,p2 69 
+---parts: ['MOV_M,A']
+20  pc: 33  instr: 0x77  pc+ 1  p1,p2  
+---parts: ['JMP', 'end']
+---jmp---add 0x00
+21  pc: 36  instr: 0xc3  pc+ 3  p1,p2 end 
+22  pc: 36  instr: 0  pc+ 0  p1,p2  
+23  pc: 36  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'is_greater:': 24, 'smaller:': 36, 'start:': 0, 'is_equal:': 30, 'end:': 36}
+- temp_prog. : ['0x2e', '0x01', '0x26', '0x01', '0x3e', '88', '0x77', '0x3e', '0x07', '0xfe', '0x07', '0x0', '0xfe', '0x08', '0x0', '0xda', 0, 'is_greater', '0xca', 0, 'is_equal', '0xc3', 0, 'end', '0x3e', '71', '0x77', '0xc3', 0, 'end', '0x3e', '69', '0x77', '0xc3', 0, 'end']
+[ the second pass ] replaces labels with addr.
+---label--- is_greater: 24
+is_greater <--- 24
+---label--- is_equal: 30
+is_equal <--- 30
+---label--- end: 36
+end <--- 36
+---label--- end: 36
+end <--- 36
+---label--- end: 36
+end <--- 36
+.:. function:  create_hex_program
+--> duration (milis.) --> 0
+--------------------------------
+- program_num
+[46, 1, 38, 1, 62, 88, 119, 62, 7, 254, 7, 0, 254, 8, 0, 218, 0, 24, 202, 0, 30, 195, 0, 36, 62, 71, 119, 195, 0, 36, 62, 69, 119, 195, 0, 36]
+- program_hex
+2e 01 26 01 3e 58 77 3e 07 fe 07 00 fe 08 00 da 00 18 ca 00 1e c3 00 24 3e 47 77 c3 00 24 3e 45 77 c3 00 24 
+--------------------------------
+- len(instr_set): 36
+================================
+0 {1} 2e   MVI_L 0x1
+                      --->#1 |S0 Z1 C0| 00000000 | 0, 0x0 2 
+2 {1} 26   MVI_H 0x1
+                      --->#2 |S0 Z1 C0| 00000000 | 0, 0x0 4 
+4 {1} 3e   MVI_A 0x58
+                      --->#3 |S0 Z0 C0| 01011000 | 88, 0x58 6 
+6 {0} 77   MOV_M,A
+                      --->#4 |S0 Z0 C0| 01011000 | 88, 0x58 7 
+7 {1} 3e   MVI_A 0x7
+                      --->#5 |S0 Z0 C0| 00000111 | 7, 0x7 9 
+9 {1} fe   CPI 0x7
+                      --->#6 |S0 Z0 C0| 00000111 | 7, 0x7 11 
+11 {0} 00   NOP
+                      --->#7 |S0 Z0 C0| 00000111 | 7, 0x7 12 
+12 {1} fe   CPI 0x8
+                      --->#8 |S0 Z0 C1| 00000111 | 7, 0x7 14 
+14 {0} 00   NOP
+                      --->#9 |S0 Z0 C1| 00000111 | 7, 0x7 15 
+15 {2} da   JC 00 18
+                      --->#10 |S0 Z0 C1| 00000111 | 7, 0x7 24 
+24 {1} 3e   MVI_A 0x47
+                      --->#11 |S0 Z0 C1| 01000111 | 71, 0x47 26 
+26 {0} 77   MOV_M,A
+                      --->#12 |S0 Z0 C1| 01000111 | 71, 0x47 27 
+27 {2} c3   JMP 00 24
+                      --->#13 |S0 Z0 C1| 01000111 | 71, 0x47 36 
+.:. function:  run_hex_code
+--> duration (milis.) --> 1365
+
+--------------------------------
+mem_free: 44720
+================================
+[ system registers ]
+a: 71 0x47 01000111
+b: 0  | c: 0
+h: 1  | l: 1
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|0|0|0|0|0|1|1|
+================================
+[ virtual memory ] - (16/32 bytes)
+[45, 71, 45, 32, 111, 99, 116, 111, 112, 117, 115, 0, 0, 0, 0, 0]
+--- hexa:
+0x2d 0x47 0x2d 0x20 0x6f 0x63 0x74 0x6f 0x70 0x75 0x73 0x0 0x0 0x0 0x0 0x0 
+--- string:
+-G- octopus
+================================
+asm file name: example_s80_cpi.asm
+core_s80 ver. 0.5
