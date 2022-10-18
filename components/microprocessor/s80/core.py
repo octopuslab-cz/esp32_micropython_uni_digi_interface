@@ -76,7 +76,7 @@ class Executor:
     def print_regs(self): # dec, hex, bin
         print("="*32)
         print("[ system registers ]")
-        print("a:",self.a, hex(self.a), bin(self.a))
+        print("a:",self.a, hex(self.a), num_to_bin_str8(self.a))
         print("b:",self.b, " | c:",self.c)
         print("h:",self.h, " | l:",self.l)
         # print("d",self.d)
@@ -355,12 +355,16 @@ class Executor:
                 
         # ------------- spec subroutines --------
         if inst=="MOV_A,A":
-            print("--> spec.sub. | acc:", self.a)
+            print("--> R ","DEC  BIN    HEX" )
+            print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
+            print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b))
+            print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c))
             self.pc += 1
             
             
         if inst=="MOV_B,B":
             print("--> spec.sub. | vitrual memory:", self.vm)
+            print("       ", self.vm)
             self.pc += 1
             
             

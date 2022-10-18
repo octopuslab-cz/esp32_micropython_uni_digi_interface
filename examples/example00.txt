@@ -1,55 +1,90 @@
-;example00_s80 - all lines ";" or COMM [PARAM] ; note
+log from terminal -->
+--- example00_s80.asm ---
+--------------------------------
+
+; example00_s80 | first test - read parameters
 ; org 0x00 ; (default)
 ;
 start:
-    MVI_A 0x07 ; a = 7
-    DCR_A      ; a = a - 1
-    DCR_A      ; a = a - 1 --> 5 
+                     ; INPUT:
+    MVI_A 0b00000111 ; bin a = 7 (dec)  | 0x07 (hex) 
+    MVI_B 0x08       ; hex b = 8
+    MVI_C 9          ; dec c = 9
     NOP
+    MOV_A,A          ; spec.subroutine --> reg.info ABC
     NOP
+    ;
+    HLT        ; halt (stop)
+    MVI_A 0x03 ; a = 3 (will not be executed)
+    NOP    
 end.
 ;
+;
+; all lines ";" or COMM [PARAM] ; "note"
+; numeric parameters: bin, hex, dec (ToDo macro variables $var)
+; start: = label
+; NOP    = No Operation
+; HLT    = Halt | https://en.wikipedia.org/wiki/HLT_(x86_instruction)
+; MVI_A / MVA A data | a = data
+; DCR_A / DCR A (s80 / 8080) decrement | a = a - 1
+;
 
-
-
-[ two-pass translator ]
-- open file: example00_s80.asm
+--------------------------------
+[ two- translator ]
 0  pc: 0  instr: 0  pc+ 0  p1,p2  
----parts: ['MVI_A', '0x07']
-1  pc: 2  instr: 0x3e  pc+ 2  p1,p2 0x07 
----parts: ['DCR_A']
-2  pc: 3  instr: 0x3d  pc+ 1  p1,p2  
----parts: ['DCR_A']
-3  pc: 4  instr: 0x3d  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0b00000111']
+1  pc: 2  instr: 0x3e  pc+ 2  p1,p2 0b00000111 
+---parts: ['MVI_B', '0x08']
+2  pc: 4  instr: 0x6  pc+ 2  p1,p2 0x08 
+---parts: ['MVI_C', '9']
+3  pc: 6  instr: 0xe  pc+ 2  p1,p2 9 
 ---parts: ['NOP']
-4  pc: 5  instr: 0x0  pc+ 1  p1,p2  
+4  pc: 7  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+5  pc: 8  instr: 0x7f  pc+ 1  p1,p2  
 ---parts: ['NOP']
-5  pc: 6  instr: 0x0  pc+ 1  p1,p2  
-6  pc: 6  instr: 0  pc+ 0  p1,p2  
+6  pc: 9  instr: 0x0  pc+ 1  p1,p2  
+---parts: ['HLT']
+7  pc: 10  instr: 0x76  pc+ 1  p1,p2  
+---parts: ['MVI_A', '0x03']
+8  pc: 12  instr: 0x3e  pc+ 2  p1,p2 0x03 
+---parts: ['NOP']
+9  pc: 13  instr: 0x0  pc+ 1  p1,p2  
+10  pc: 13  instr: 0  pc+ 0  p1,p2  
 - temp_labels: {'start:': 0}
-- temp_prog. : ['0x3e', '0x07', '0x3d', '0x3d', '0x0', '0x0']
-[ the second pass replaces labels with addr. ]
-- program_num [62, 7, 61, 61, 0, 0]
-------------------------------
-len(instr_set): 6
-==============================
+- temp_prog. : ['0x3e', '0b00000111', '0x6', '0x08', '0xe', '9', '0x0', '0x7f', '0x0', '0x76', '0x3e', '0x03', '0x0']
+[ the second  replaces labels with addr. ]
+- program_num [62, 7, 6, 8, 14, 9, 0, 127, 0, 118, 62, 3, 0]
+--------------------------------
+- len(instr_set): 13
+================================
 0 {1} 3e   MVI_A 0x7
                       --->#1 |S0 Z0 C0| 00000111 | 7, 0x7 2 
-2 {0} 3d   DCR_A
-                      --->#2 |S0 Z0 C0| 00000110 | 6, 0x6 3 
-3 {0} 3d   DCR_A
-                      --->#3 |S0 Z0 C0| 00000101 | 5, 0x5 4 
-4 {0} 00   NOP
-                      --->#4 |S0 Z0 C0| 00000101 | 5, 0x5 5 
-5 {0} 00   NOP
-                      --->#5 |S0 Z0 C0| 00000101 | 5, 0x5 6 
+2 {1} 06   MVI_B 0x8
+                      --->#2 |S0 Z0 C0| 00000111 | 7, 0x7 4 
+4 {1} 0e   MVI_C 0x9
+                      --->#3 |S0 Z0 C0| 00000111 | 7, 0x7 6 
+6 {0} 00   NOP
+                      --->#4 |S0 Z0 C0| 00000111 | 7, 0x7 7 
+7 {0} 7f   MOV_A,A
+--> R  DEC  BIN    HEX
+    A:  7 00000111 07
+    B:  8 00001001 08
+    C:  9 00001001 09
+                      --->#5 |S0 Z0 C0| 00000111 | 7, 0x7 8 
+8 {0} 00   NOP
+                      --->#6 |S0 Z0 C0| 00000111 | 7, 0x7 9 
+9 {0} 76   HLT
+                      --->#7 |S0 Z0 C0| 00000111 | 7, 0x7 9 
+.:. function:  run_hex_code
+--> duration (milis.) --> 51
 
-------------------------------
-mem_free: 57440
+--------------------------------
+mem_free: 57536
 ================================
 [ system registers ]
-a: 5 0x5 0b101
-b: 0  | c: 0
+a: 7 0x7 00000111
+b: 8  | c: 9
 h: 0  | l: 0
 --------------------------------
 |S|Z|0|C|0|P|1|C|
@@ -62,4 +97,5 @@ h: 0  | l: 0
 --- string:
 
 ================================
-core_s80 ver. 0.3
+asm file name: example00_s80.asm
+core_s80 ver. 0.5
