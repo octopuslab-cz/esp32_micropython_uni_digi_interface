@@ -140,3 +140,4 @@ https://github.com/parasj/python-assembler
 
 http://popolony2k.com.br/xtras/programming/asm/nemesis-lonestar/8080-z80-instruction-set.html
 
+http://www.emulator101.com/reference/8080-by-opcode.html
