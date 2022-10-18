@@ -100,6 +100,7 @@ class Executor:
             print("--- hexa:")
             for ch in vm_sorted:
                 print(hex(ch),end=" ")
+                # print(num_to_hex_str2(hex(ch)),end=" ")
             print()
             print("--- string:")
             for ch in vm_sorted:
@@ -482,7 +483,7 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
     
     print("- temp_labels:",labels)
     print("- temp_prog. :",program)
-    print("[ the second  replaces labels with addr. ]")
+    print("[ the second pass ] replaces labels with addr.")
     
     i=0
     
@@ -505,6 +506,7 @@ for instruct, opcode in instr.instructions.items():
     if DEBUG: print(opcodes[opcode], end=".")
 
 
+@octopus_duration(True)
 def create_hex_program(p, prn=True, info=False):
     hex_program = []
     if info:
@@ -525,6 +527,12 @@ def create_hex_program(p, prn=True, info=False):
             print(str(hex_i)+"??? ", end=",")
     if prn: print("]", end="")
     return hex_program
+
+
+def print_hex_program(p): # really hex )
+    for h in p:
+        print(num_to_hex_str2(h),end=" ")
+    print()
 
 
 @octopus_duration(True)

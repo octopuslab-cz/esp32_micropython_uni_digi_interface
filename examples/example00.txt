@@ -53,8 +53,14 @@ end.
 10  pc: 13  instr: 0  pc+ 0  p1,p2  
 - temp_labels: {'start:': 0}
 - temp_prog. : ['0x3e', '0b00000111', '0x6', '0x08', '0xe', '9', '0x0', '0x7f', '0x0', '0x76', '0x3e', '0x03', '0x0']
-[ the second  replaces labels with addr. ]
-- program_num [62, 7, 6, 8, 14, 9, 0, 127, 0, 118, 62, 3, 0]
+[ the second pass ] replaces labels with addr.
+.:. function:  create_hex_program
+--> duration (milis.) --> 0
+--------------------------------
+- program_num
+[62, 7, 6, 8, 14, 9, 0, 127, 0, 118, 62, 3, 0]
+- program_hex
+3e 07 06 08 0e 09 00 7f 00 76 3e 03 00 
 --------------------------------
 - len(instr_set): 13
 ================================
@@ -69,7 +75,7 @@ end.
 7 {0} 7f   MOV_A,A
 --> R  DEC  BIN    HEX
     A:  7 00000111 07
-    B:  8 00001001 08
+    B:  8 00001000 08
     C:  9 00001001 09
                       --->#5 |S0 Z0 C0| 00000111 | 7, 0x7 8 
 8 {0} 00   NOP
@@ -77,10 +83,10 @@ end.
 9 {0} 76   HLT
                       --->#7 |S0 Z0 C0| 00000111 | 7, 0x7 9 
 .:. function:  run_hex_code
---> duration (milis.) --> 51
+--> duration (milis.) --> 736
 
 --------------------------------
-mem_free: 57536
+mem_free: 56640
 ================================
 [ system registers ]
 a: 7 0x7 00000111

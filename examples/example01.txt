@@ -86,10 +86,16 @@ end.
 24  pc: 28  instr: 0  pc+ 0  p1,p2  
 - temp_labels: {'loop2:': 10, 'loop1:': 5, 'start:': 0}
 - temp_prog. : ['0x3e', '0b00000111', '0xe', '0b10101010', '0x47', '0x0', '0x3d', '0xc2', 0, 'loop1', '0x3e', '0x09', '0x7', '0x7', '0x7', '0xf', '0xf', '0xf', '0x3e', '0xFF', '0x3c', '0x3c', '0x3c', '0x3c', '0x87', '255', '0x3c', '0x0']
-[ the second  replaces labels with addr. ]
+[ the second pass ] replaces labels with addr.
 ---label--- loop1: 5
 loop1 <--- 5
-- program_num [62, 7, 14, 170, 71, 0, 61, 194, 0, 5, 62, 9, 7, 7, 7, 15, 15, 15, 62, 255, 60, 60, 60, 60, 135, 255, 60, 0]
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+--------------------------------
+- program_num
+[62, 7, 14, 170, 71, 0, 61, 194, 0, 5, 62, 9, 7, 7, 7, 15, 15, 15, 62, 255, 60, 60, 60, 60, 135, 255, 60, 0]
+- program_hex
+3e 07 0e aa 47 00 3d c2 00 05 3e 09 07 07 07 0f 0f 0f 3e ff 3c 3c 3c 3c 87 ff 3c 00 
 --------------------------------
 - len(instr_set): 28
 ================================
@@ -172,13 +178,13 @@ loop1 <--- 5
 27 {0} 00   NOP
                       --->#39 |S0 Z0 C0| 00000011 | 3, 0x3 28 
 .:. function:  run_hex_code
---> duration (milis.) --> 290
+--> duration (milis.) --> 4083
 
 --------------------------------
-mem_free: 39216
+mem_free: 37760
 ================================
 [ system registers ]
-a: 3 0x3 0b11
+a: 3 0x3 00000011
 b: 7  | c: 170
 h: 0  | l: 0
 --------------------------------
