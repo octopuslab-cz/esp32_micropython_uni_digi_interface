@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.5.1" # 2022/10/18 /628
+__version__ = "0.5.2" # 2022/10/19  /672
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -475,6 +475,7 @@ class Executor:
 def parse_file(uP, file_name, print_asm=True, debug = True):
     pc = 0
     labels = {}
+    variables = {}
     program = []
                
     # f = open("data/" + file)
@@ -491,16 +492,11 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
         print()
         print("-"*32)
         
-    print("[ two- translator ]")
+    print("[ two pass - translator ]")
+    print("[---1---] first pass:")
     
-    l=0
     for line in fs.splitlines():
-        
-        # clean up    
         clean_line = line.split(";")[0].strip()
-        clean_line = clean_line.replace('   ',' ')  # 123456 > 12 | 12345 > 123 | 1234 > 12
-        clean_line = clean_line.replace('  ',' ')   # 123 > 12
-        clean_line = clean_line.replace('  ',' ')
         
         # data_string
         index_vm = 256  # start data virtual memory FF+1
@@ -513,6 +509,30 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
                 index_vm += 1
             uP.vm[index_vm] = 0 # last "0" = stop
         
+        # variables  $var = 123 ---> var: 123
+        if clean_line.count("$"):
+            var_parts = clean_line.split(";")[0].split("=")
+            variables[var_parts[0].strip().replace("$","")] = var_parts[1].strip()
+        
+    print("- temp_variables",variables)
+       
+    for var_name,var in variables.items():
+        print("replace", var_name, var) # variables[var_name]
+        fs = fs.replace(var_name,var)
+    print()
+    print("-"*32)
+        
+    print("[---2---] second pass:")
+    l=0
+    for line in fs.splitlines():
+        
+        # clean up    
+        clean_line = line.split(";")[0].strip()
+        clean_line = clean_line.replace('   ',' ')  # 123456 > 12 | 12345 > 123 | 1234 > 12
+        clean_line = clean_line.replace('  ',' ')   # 123 > 12
+        clean_line = clean_line.replace('  ',' ')
+              
+                    
         if len(clean_line) > 0:
             i_pc, i_hex, i_p1, i_p2 = 0,0,"",""
             for i1 in instr.instructions:
@@ -555,7 +575,8 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
     
     print("- temp_labels:",labels)
     print("- temp_prog. :",program)
-    print("[ the second pass ] replaces labels with addr.")
+    print("[---3---] third pass:")
+    print("- replaces labels with addr.")
     
     i=0
     

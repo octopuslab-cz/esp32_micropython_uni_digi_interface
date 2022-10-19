@@ -18,7 +18,6 @@ zero_param_instr = {
  'MOV_A,A','MOV_B,B','MOV_C,C','MOV_D,D','MOV_E,E','MOV_L,L','MOV_H,H',
  'INR_A','INR_B','INR_C','INR_L','INR_H','INX_B','INX_H'
  'DCR_A','DCR_B','DCR_C','DCR_L','DCR_H','DCX_B','DCX_H',
- 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M',
  'ADC_A','ADC_B','ADC_C','ADC_H','ADC_L','ADC_M',
  'SUB_A','SUB_B','SUB_C','SUB_H','SUB_L','SUB_M',
  'SBB_A','SBB_B','SBB_C','SBB_H','SBB_L','SBB_M',
@@ -26,6 +25,8 @@ zero_param_instr = {
  'XRA_A','XRA_B','XRA_C','XRA_H','XRA_L','XRA_M',
  'ORA_A','ORA_B','ORA_C','ORA_H','ORA_L','ORA_M', 
 }
+
+# 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M',
 
 
 # instr: "address"
