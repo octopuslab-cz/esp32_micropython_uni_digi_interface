@@ -118,12 +118,31 @@ AC    State of auxiliary Carry bit
 pb P  State of Parity bit
    1  always 1
 cb C  State of Carry bit
+
+
+```
+
+## s80 MEMORY
+
+```
+0000 +--------------+
+     |   program    | (256 B)
+00FF +--------------+
+     |     data     |
+0100 |display string| (32 B)
+     |              |    
+0120 |  virtual RAM |
+     |      ...     |
+     +--------------+
+FF00 | virtual ROM  | sub_procedudes
+     +--------------+
+
 ```
 
 
 ---
 
-## Inspitation and lins
+## Inspitation and links
 
 
 https://github.com/GodTamIt/assembler
