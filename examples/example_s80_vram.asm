@@ -13,6 +13,7 @@ start:
     MOV_M,A     ; (HL)<-A
     ;
     MOV_B,B     ; spec.suroutine - print vm
+    MOV_D,D     ; display
     ;
     LXI_H 2 1   ; L=2 H=1 # H byte3 / L byte2 :: I L H
     MOV_A,A
@@ -21,6 +22,7 @@ start:
     MVI_M 51    ; "3"
     ;
     MOV_B,B     ; spec.suroutine - print vm
+    MOV_D,D     ; display
     ;
 ;
 end.

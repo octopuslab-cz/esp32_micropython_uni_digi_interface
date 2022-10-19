@@ -8,11 +8,16 @@ from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
 from components.microprocessor.s80.table import get_instr_param
 
-HW_COMPONETS = True
+HW_COMPONETS = False
+DISPLAY7 = True
 
 if HW_COMPONETS:
     from components.led import Led
     led = Led(2)
+    
+if DISPLAY7:
+    from utils.octopus import disp7_init
+    d7 = disp7_init()
 
 """
 from components.microprocesor.s80.core import Executor
@@ -22,10 +27,8 @@ from components.microprocesor.s80.core import Executor, create_hex_program, pars
 program = parse_file(uP,"example01_s80.asm")
 hex_program = create_hex_program(program,prn=False)
 run_hex_code(uP,hex_program,run_delay_ms=10)
-
 """
 
-#class Executor(object):
 class Executor:
     
     def __init__(self):
@@ -114,7 +117,7 @@ class Executor:
         print("="*32)
   
     
-    #---------------------------------------
+    #------------------------------
     def execute(self, inst, param):
         self.loop += 1
         
@@ -268,8 +271,8 @@ class Executor:
             self.pc += 3
             
         if inst=="LXI_H": # H byte3 / L byte2 ??? I L H
-            self.h = param[0]
-            self.l = param[1] 
+            self.l = param[0]
+            self.h = param[1] 
             self.pc += 3
             
         if inst=="MVI_C":
@@ -441,7 +444,13 @@ class Executor:
             self.pc += 1
             
         if inst=="MOV_D,D":
-            print("--> spec.sub. | display (ToDo) ...")
+            print("--> spec.sub. | 7seg. display ")
+            addr = self.h*256 + self.l
+            data8 = num_to_hex_str2(self.vm.get(addr))
+            print("[ "+num_to_hex_str4(addr)+ " | "+ data8+ " ]")
+            if DISPLAY7:
+               d7.show(num_to_hex_str4(addr)+"  "+data8)
+               sleep(0.5)             
             self.pc += 1
             
         if inst=="MOV_E,E":
@@ -531,12 +540,10 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
                                 program.append(i_p1)
                     
                         #if i_pc > 2: i_p2 = parts[2]
-                            
                         
                         except:
                             print("Err. No3")
-                            program.append(0)
-                    
+                            program.append(0)                
             # find label
             label = "-"
             if line.count(":") == 1:
@@ -560,7 +567,6 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
         i += 1
   
     return program
-
 
 DEBUG = False
 

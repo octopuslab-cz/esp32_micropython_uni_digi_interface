@@ -3,7 +3,7 @@ from random import randint
 # from components.i2c_expander import Expander16
 from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
-from octopus_digilab import bin_str_to_int, num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
+from octopus_digital import bin_str_to_int, num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 
 
 ui = Universal_interface()

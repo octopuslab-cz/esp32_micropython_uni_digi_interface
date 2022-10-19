@@ -4,7 +4,6 @@
 zero_param_instr    1  INSTR 
 single_param_instr  2  INSTR PARAM1
 double_param_instr  3  INSTR PARAM1 PARAM2
-
 """
 
 zero_param_instr = {
