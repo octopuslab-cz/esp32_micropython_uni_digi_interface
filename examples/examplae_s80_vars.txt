@@ -1,0 +1,104 @@
+log from terminal -->
+--- example_s80_vars.asm ---
+--------------------------------
+
+; example_s80_vars: macro variables
+;
+$var1 = 123               ; note
+$var2 = 0b10101010
+$virtual_label = label2:  ; poznamka2
+;
+start:
+    MVI_B var2
+    MVI_A var1
+    MOV_A,A
+    CMA
+    MOV_A,A
+;
+; 
+virtual_label ; variable
+;
+end.
+
+
+--------------------------------
+[ two pass - translator ]
+[---1---] first pass:
+- temp_variables {'var1': '123', 'var2': '0b10101010', 'virtual_label': 'label2:'}
+replace var1 123
+replace var2 0b10101010
+replace virtual_label label2:
+
+--------------------------------
+[---2---] second pass:
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+1  pc: 0  instr: 0  pc+ 0  p1,p2  
+2  pc: 0  instr: 0  pc+ 0  p1,p2  
+3  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_B', '0b10101010']
+4  pc: 2  instr: 0x6  pc+ 2  p1,p2 0b10101010 
+---parts: ['MVI_A', '123']
+5  pc: 4  instr: 0x3e  pc+ 2  p1,p2 123 
+---parts: ['MOV_A,A']
+6  pc: 5  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['CMA']
+7  pc: 6  instr: 0x2f  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+8  pc: 7  instr: 0x7f  pc+ 1  p1,p2  
+9  pc: 7  instr: 0  pc+ 0  p1,p2  
+10  pc: 7  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'label2:': 7, 'start:': 0}
+- temp_prog. : ['0x6', '0b10101010', '0x3e', '123', '0x7f', '0x2f', '0x7f']
+[---3---] third pass:
+- replaces labels with addr.
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+--------------------------------
+- program_num
+[6, 170, 62, 123, 127, 47, 127]
+- program_hex
+06 aa 3e 7b 7f 2f 7f 
+--------------------------------
+- len(instr_set): 7
+================================
+0 {1} 06   MVI_B 0xaa
+                      --->#1 |S0 Z0 C0| 00000000 | 0, 0x0 2 
+2 {1} 3e   MVI_A 0x7b
+                      --->#2 |S0 Z0 C0| 01111011 | 123, 0x7b 4 
+4 {0} 7f   MOV_A,A
+--> R  DEC BIN    HEX (B_C)
+    A:  123 01111011 7b
+    B:  170 10101010 aa  (43520)
+    C:  0 00000000 00  [0]
+                      --->#3 |S0 Z0 C0| 01111011 | 123, 0x7b 5 
+5 {0} 2f   CMA
+                      --->#4 |S0 Z0 C0| 10000100 | 132, 0x84 6 
+6 {0} 7f   MOV_A,A
+--> R  DEC BIN    HEX (B_C)
+    A:  132 10000100 84
+    B:  170 10101010 aa  (43520)
+    C:  0 00000000 00  [0]
+                      --->#5 |S0 Z0 C0| 10000100 | 132, 0x84 7 
+.:. function:  run_hex_code
+--> duration (milis.) --> 532
+
+--------------------------------
+ESP mem_free: 4080
+================================
+[ system registers ]
+a: 132 0x84 10000100
+b: 170  | c: 0
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|0|0|0|0|0|1|0|
+================================
+[ virtual memory ] - (16/32 bytes)
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+--- hexa:
+0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+--- string:
+
+================================
+asm file name: example_s80_vars.asm
+core_s80 ver. 0.5.2

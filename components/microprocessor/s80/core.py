@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.5.2" # 2022/10/19  /672
+__version__ = "0.5.3" # 2022/10/23  /722
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -7,17 +7,56 @@ from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num
 from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
 from components.microprocessor.s80.table import get_instr_param
+from machine import Pin
+from utils.pinout import set_pinout
+pinout = set_pinout()
+import gc
+print("- init")
+print("core: ESP mem_free",gc.mem_free())
+gc.collect()
+print("core: ESP mem_free",gc.mem_free())
 
-HW_COMPONETS = False
-DISPLAY7 = True
+# Hw components:
+HW_LED = False
+HW_RGB = True
+DISPLAY7 = False
+DISPLAY_TM = True
+DISPLAY_LCD4 = False
 
-if HW_COMPONETS:
+HW_DEBUG = True
+
+
+if HW_LED: # Leds
     from components.led import Led
     led = Led(2)
+    led.blink()
     
+def rgb_fill(ws, c=(0,0,0)):
+    for i in range(8):
+        ws.color(c,i)
+            
+if HW_RGB: # Leds
+    from components.rgb import Rgb
+    ws = Rgb(pinout.DEV1_PIN,8)
+    # ws.rainbow_cycle()
+    rgb_fill(ws,(100,0,0))
+    sleep(0.3)
+    rgb_fill(ws,(0,0,0))
+   
+
+    
+   
 if DISPLAY7:
     from utils.octopus import disp7_init
     d7 = disp7_init()
+    
+if DISPLAY_TM:    
+    from lib.tm1638 import TM1638
+    tm = TM1638(stb=Pin(pinout.SPI_MOSI_PIN), clk=Pin(pinout.SPI_MISO_PIN), dio=Pin(pinout.SPI_CLK_PIN))
+    tm.show2("0000  FF")
+    # table1: matrix 4x4 - ABCD > K1 K2 K3 -
+    btn_tab = {1:'E',2:'8',4:'4',8:'123',16:'C',32:'7',64:'3',128:'123',512:'0',1024:'6',2048:'2',8192:'9',16384:'5',32768:'1'}
+
 
 """
 from components.microprocesor.s80.core import Executor
@@ -377,6 +416,7 @@ class Executor:
                         
         if inst=="RLC":        
             self.a = self.a << 1
+            self.set_c(self.a)
             self.pc += 1
             
         #self.cy = self.acc >> 4
@@ -432,6 +472,15 @@ class Executor:
             print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
+            
+            if HW_DEBUG and DISPLAY_TM:
+                tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
+                i = 0
+                for a_bit in num_to_bin_str8(self.a):
+                    if a_bit =="1": ws.color((100,0,0),7-i)
+                    else: ws.color((0,0,0),7-i)
+                    i += 1
+                    if i > 7: i = 7
             self.pc += 1
             
         if inst=="MOV_B,B":
@@ -460,12 +509,13 @@ class Executor:
             
         if inst=="MOV_H,H":
             print("--> spec.sub. - LED_ON (High)")
-            if HW_COMPONETS: led.value(1)
+            if HW_LED: led.value(1)
             self.pc += 1
             
         if inst=="MOV_L,L":
             print("--> spec.sub. - LED_OFF (Low)")
-            if HW_COMPONETS: led.value(0)
+            if HW_LED: led.value(0)
+            if HW_RGB: rgb_fill(ws)
             self.pc += 1
             
         if(True): # /debug
@@ -478,7 +528,7 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
     variables = {}
     program = []
                
-    # f = open("data/" + file)
+    gc.collect()
     f = open("examples/"+file_name)
     fs = f.read()
     f.close()
