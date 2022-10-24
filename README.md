@@ -13,6 +13,7 @@ https://github.com/octopuslab-cz/micropython_4004-emul
 - Univac 8008 (1972)
 - **Altair 8800** (1974)
 - **MK14** (1977)
+- **Microprocessor lab 5036A** (1978) - Hewlett Packard.
 - ...
 - 
 ## 8-bit: 6502 (Motorola)
@@ -76,12 +77,7 @@ UDI Monitor 0.2 OctopusLAB 2016-22
 
 0000  8b  e3  1f  d9  87  9d  7b  1f  71  6b  63  21  d5  fb  4b  e3
 0010  ff  3d  fd  e7  fb  13  f1  0b  e3  fb  01  f3  e3  5f  73  6b
-0020  8b  e3  1f  d9  87  9d  7b  1f  71  6b  63  21  d5  fb  4b  e3
-0030  ff  3d  fd  e7  fb  13  f1  0b  e3  fb  01  f3  e3  5f  73  6b
-0040  8b  e3  1f  d9  87  9d  7b  1f  71  6b  63  21  d5  fb  4b  e3
-0050  ff  3d  fd  e7  fb  13  f1  0b  e3  fb  01  f3  e3  5f  73  6b
-0060  8b  e3  1f  d9  87  9d  7b  1f  71  6b  63  21  d5  fb  4b  e3
-0070  ff  3d  fd  e7  fb  13  f1  0b  e3  fb  01  f3  e3  5f  73  6b
+...
 
 ```
 
@@ -97,7 +93,7 @@ s80
 |    S P    |   stack pointer
 +-----------+
 +-----+
-|  A  |  F      accumulator ↑ flags
+|  A  |  F      accumulator | flags
 +-----+-----+
 |  B  |  C  |   system registers
 +-----+-----+
