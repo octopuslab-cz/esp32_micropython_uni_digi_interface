@@ -20,11 +20,12 @@ start:
     MVI_A 0
 loop:
     INR_A        ; increment a = a + 1
-    CALL display
+    CALL display ; show data
     CPI 0xFF     ; compare
     JNC finish   ; is_greater 
     JMP loop
 ;
 finish:
+    NOP          ; test
 ;
 end.

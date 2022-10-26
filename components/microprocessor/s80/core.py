@@ -20,15 +20,14 @@ print("core: ESP mem_free",gc.mem_free())
 HW_LED = False
 HW_RGB = True
 DISPLAY7 = False
-DISPLAY_TM = True
-DISPLAY_LCD4 = False
+DISPLAY_TM = False
+DISPLAY_LCD4 = True
 
 HW_DEBUG = True
 
-
 if HW_LED: # Leds
-    from components.led import Led
-    led = Led(2)
+    from components.udi_hw import init_led
+    led = init_led(2)
     led.blink()
     
 def rgb_fill(ws, c=(0,0,0)):
@@ -43,7 +42,12 @@ if HW_RGB: # Leds
     sleep(0.3)
     rgb_fill(ws,(0,0,0))
    
-
+if DISPLAY_LCD4:
+    from components.udi_hw import i2c_init, lcd4_init, lcd4_show
+    i2c = i2c_init()
+    lcd = lcd4_init(i2c)
+    #              "****************"
+    lcd4_show(lcd, "start & init",3)
     
    
 if DISPLAY7:
@@ -473,14 +477,21 @@ class Executor:
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
             
-            if HW_DEBUG and DISPLAY_TM:
-                tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
+            if HW_DEBUG and HW_RGB:
                 i = 0
                 for a_bit in num_to_bin_str8(self.a):
                     if a_bit =="1": ws.color((100,0,0),7-i)
                     else: ws.color((0,0,0),7-i)
                     i += 1
                     if i > 7: i = 7
+            
+            if HW_DEBUG and DISPLAY_TM:
+                tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
+                
+            if HW_DEBUG and DISPLAY_LCD4:
+                lcd4_show(lcd, num_to_hex_str4(self.pc),2)
+                lcd4_show(lcd, num_to_bin_str8(self.a)+" | "+num_to_hex_str2(self.a),3)
+                
             self.pc += 1
             
         if inst=="MOV_B,B":
