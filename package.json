@@ -1,0 +1,28 @@
+{
+  "urls": [
+  ["udim.py", "github:octopuslab-cz/esp32_micropython_framework/udim.py"],
+
+  ["components/udi_hw.py", "github:octopuslab-cz/esp32_micropython_framework/components/udi_hw.py"], 
+  ["components/microprocessor/__init__.py", "github:octopuslab-cz/esp32_micropython_framework/components/microprocessor/__init__.py"], 
+  ["components/microprocessor/s80/__init__.py", "github:octopuslab-cz/esp32_micropython_framework/components/microprocessor/s80/__init__.py"],
+  ["components/microprocessor/s80/core.py", "github:octopuslab-cz/esp32_micropython_framework/components/microprocessor/s80/core.py"],  
+  ["components/microprocessor/s80/instructions.py", "github:octopuslab-cz/esp32_micropython_framework/components/microprocessor/s80/instructions.py"],
+  ["components/microprocessor/s80/table.py", "github:octopuslab-cz/esp32_micropython_framework/components/microprocessor/s80/table.py"],  
+    
+  ["lib/mini_terminal.py", "github:octopuslab-cz/esp32_micropython_framework/lib/mini_terminal.py"],
+  ["lib/universal_digital_interface.py", "github:octopuslab-cz/esp32_micropython_framework/lib/universal_digital_interface.py"],
+
+  ["examples/example00_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example00_s80.asm"],
+  ["examples/example01_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example01_s80.asm"],
+  ["examples/example02_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example02_s80.asm"],
+  ["examples/example03_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example03_s80.asm"],
+  ["examples/example05_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example05_s80.asm"],
+  ["examples/example06_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example06_s80.asm"],
+  ["examples/example07_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example07_s80.asm"],
+  ["examples/example08_s80.asm", "github:octopuslab-cz/esp32_micropython_framework/examples/example08_s80.asm"],
+  
+  ],
+  "deps": [
+  ],
+  "version": "2.0.9"
+}
