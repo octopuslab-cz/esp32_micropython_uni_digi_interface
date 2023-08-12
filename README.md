@@ -49,7 +49,12 @@ D00-D07
 ```
 
 
+## Install
 
+```python
+import mip
+mip.install("github:octopuslab-cz/esp32_micropython_uni_digi_interface", target=".")
+```
 
 ### udim.py
 
