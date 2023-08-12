@@ -1,4 +1,4 @@
-# octopusLAB - core - simple_80 processor
+# octopusLAB - core - simple_80 virtual processor
 __version__ = "1.0.1" #
 
 from time import sleep, sleep_ms
