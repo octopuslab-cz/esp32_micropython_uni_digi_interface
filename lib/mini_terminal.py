@@ -1,10 +1,11 @@
 # This file is part of the octopusLAB project
-# The MIT License (MIT)
-# Copyright (c) 2016-2021 Jan Copak, Petr Kracik, Vasek Chalupnicek
+# The MIT License
+# (c) 2016-2021 Jan Copak, Petr Kracik, Vasek Chalupnicek
 
 # from mini_terminal import terminal_info...
 import sys
 
+__version__ = "1.0.1"
 
 SEPARATOR_WIDTH = 39
 

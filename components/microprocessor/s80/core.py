@@ -1,8 +1,8 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.5.3" # 2022/10/23  /722
+__version__ = "1.0.1" #
 
 from time import sleep, sleep_ms
-from utils.octopus_decor import octopus_duration
+from octopus_decor import octopus_duration
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
@@ -11,6 +11,7 @@ from machine import Pin
 from utils.pinout import set_pinout
 pinout = set_pinout()
 import gc
+
 print("- init")
 print("core: ESP mem_free",gc.mem_free())
 gc.collect()
@@ -18,10 +19,10 @@ print("core: ESP mem_free",gc.mem_free())
 
 # Hw components:
 HW_LED = False
-HW_RGB = True
-DISPLAY7 = False
+HW_RGB = False
+DISPLAY8 = False
 DISPLAY_TM = False
-DISPLAY_LCD4 = True
+DISPLAY_LCD4 = False
 
 HW_DEBUG = True
 
@@ -35,7 +36,7 @@ def rgb_fill(ws, c=(0,0,0)):
         ws.color(c,i)
             
 if HW_RGB: # Leds
-    from components.rgb import Rgb
+    from components.ws_rgb import Rgb
     ws = Rgb(pinout.DEV1_PIN,8)
     # ws.rainbow_cycle()
     rgb_fill(ws,(100,0,0))
@@ -50,7 +51,7 @@ if DISPLAY_LCD4:
     lcd4_show(lcd, "start & init",3)
     
    
-if DISPLAY7:
+if DISPLAY8:
     from utils.octopus import disp7_init
     d7 = disp7_init()
     
@@ -508,7 +509,7 @@ class Executor:
             addr = self.h*256 + self.l
             data8 = num_to_hex_str2(self.vm.get(addr))
             print("[ "+num_to_hex_str4(addr)+ " | "+ data8+ " ]")
-            if DISPLAY7:
+            if DISPLAY8:
                d7.show(num_to_hex_str4(addr)+"  "+data8)
                sleep(0.5)             
             self.pc += 1
@@ -533,7 +534,7 @@ class Executor:
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
 # -----------------------------------------
-def parse_file(uP, file_name, print_asm=True, debug = True):
+def parse_file(uP, file_name,print_asm=True,debug=True):
     pc = 0
     labels = {}
     variables = {}

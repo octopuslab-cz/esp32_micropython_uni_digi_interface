@@ -1,6 +1,7 @@
 {
   "urls": [
   ["udim.py", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/udim.py"],
+  ["test_s80.py", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/test_s80.py"],
 
   ["components/udi_hw.py", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/components/udi_hw.py"], 
   ["components/microprocessor/__init__.py", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/components/microprocessor/__init__.py"], 

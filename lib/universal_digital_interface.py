@@ -1,35 +1,22 @@
 # octopusLAB - universal digital interface for microprocesor / EEPROM / Etc.
-__version__ = "0.2 (6.9.22)" #
+__version__ = "0.2.1" #
 
 from machine import Pin, I2C
 from time import sleep, sleep_ms
 from micropython import const
-from utils.bits import neg, reverse, int2bin, get_bit, set_bit
+from octopus_digital import neg, reverse, int2bin, get_bit, set_bit
 
 """
->>> num_to_hex_str4(1325)
-'052d'
-
->>> int_to_bin_str8(22)
-'00010110'
-
->>> bin_str_to_int("1010101")
-85
-
->>> num_to_bytes2(255)
-bytearray(b'\x00\xff')
-
->>> num_to_bytes2(0b1111111111111111)
-bytearray(b'\xff\xff')
-
+num_to_hex_str4(1325)     # '052d'
+int_to_bin_str8(22)       # '00010110'
+bin_str_to_int("1010101") # 85
+num_to_bytes2(255)        # bytearray(b'\x00\xff')
+num_to_bytes2(0b1111111111111111) # bytearray(b'\xff\xff')
 """
 
 PORT_REVERSE = True
-
 # Expander: PCF8574 - 8-bit
-
 # Expander: PCF8575 - 16-bit
-
 
 # addr16: 000 = 39
 # e8 = Expander8(addr) addr default 000 > 0x20
@@ -53,7 +40,6 @@ class Universal_interface:
         self.hw = hw # hw ver 1+ / 2config
         self.i2c = i2c_init()
         
-        
         # ===== pinouts =====             
         self.sensor = None
         
@@ -61,9 +47,9 @@ class Universal_interface:
         self.ADDR08 = const(55)  # 555
         self.ADDR16 = const(39)  # 000 addr
         self.ADDR16d = const(38) # 001 data
-        
     
-    def set_temp1(self, value):  self.temp1 = value
+    def set_temp1(self, value):
+        self.temp1 = value
     
     
     def write16(self,bytes2):

@@ -1,13 +1,12 @@
 """
 Universal Digital Interface - Monitor
-(c) 2016-22 OctopusLab 2022/10/10
-
+(c) 2016-23 OctopusLab
 """
-ver = "0.3" # basic - beta
+ver = "0.2.0" # basic - beta
 
 from time import sleep, sleep_ms
-from utils.bits import neg, reverse, get_bit, set_bit # int2bin
 from universal_digital_interface import Universal_interface
+from octopus_digital import neg, reverse, get_bit, set_bit # int2bin
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from octopus_digital import bin_str_to_int, hex_dump, ascii_table
 from mini_terminal import terminal_info, terminal_color, terminal_clear
@@ -42,18 +41,17 @@ print(i, num_to_hex_str4(i), data8, num_to_bytes(i,rev=False))
 
 """
 
-
 # -------------------------------------
 DEBUG = False
-DISPLAY7 = True
+DISPLAY8 = False
 terminal_run = True
 PROCESOR = "Z80"
 machine_code = () # table
 address = 0   
     
-if DISPLAY7:
-    from utils.octopus import disp7_init
-    d7 = disp7_init()
+if DISPLAY8:
+    from components.display8 import Display8
+    d8 = Display8() #disp7_init()
 
 
 def parse_input(input_str):
@@ -149,7 +147,6 @@ while terminal_run:
         
     if cmd0.upper() == "P": PROCESOR = cmd1
 
-
     if cmd0.upper() == "R":
         addr = int(cmd1)
         
@@ -158,10 +155,9 @@ while terminal_run:
         # data =  num_to_hex_str4(addr)
         data8 = num_to_hex_str2(ui.read16d()[1])
         print("read:", num_to_hex_str4(addr), data8)
-        if DISPLAY7:
-            d7.show(num_to_hex_str4(addr)+"  "+data8)
-        
-
+        if DISPLAY8:
+            d8.show(num_to_hex_str4(addr)+"  "+data8)
+  
     if cmd0 == "D":
         addr = int(cmd1)
         
