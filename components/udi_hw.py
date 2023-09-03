@@ -29,3 +29,14 @@ def lcd4_init(i2c):
     lcd4_show(lcd, "****************",1)
       
     return lcd
+
+
+def exp16_init():
+    from components.led import Led
+    from components.i2c_expander import Expander16
+ 
+    clk = Led(26)
+    b2 = bytearray(16 // 8) # temp 2 bytes    
+    e16 = Expander16(39) # addr default 000 > 0x20
+    
+    return e16, b2, clk

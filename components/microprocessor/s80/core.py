@@ -23,6 +23,7 @@ HW_RGB = False
 DISPLAY8 = False
 DISPLAY_TM = False
 DISPLAY_LCD4 = False
+EXP16_74LS374 = False
 
 HW_DEBUG = True
 
@@ -54,13 +55,40 @@ if DISPLAY_LCD4:
 if DISPLAY8:
     from utils.octopus import disp7_init
     d7 = disp7_init()
-    
+
+
 if DISPLAY_TM:    
     from lib.tm1638 import TM1638
     tm = TM1638(stb=Pin(pinout.SPI_MOSI_PIN), clk=Pin(pinout.SPI_MISO_PIN), dio=Pin(pinout.SPI_CLK_PIN))
     tm.show2("0000  FF")
     # table1: matrix 4x4 - ABCD > K1 K2 K3 -
     btn_tab = {1:'E',2:'8',4:'4',8:'123',16:'C',32:'7',64:'3',128:'123',512:'0',1024:'6',2048:'2',8192:'9',16384:'5',32768:'1'}
+
+
+if EXP16_74LS374:
+    from octopus_digital import neg, reverse, int2bin, get_bit, set_bit
+    from octopus_digital import num_to_bin_str8
+    from universal_digital_interface import num_to_bytes2
+    from components.udi_hw import exp16_init
+    # expander instance, byty2 temp, clk 74LS374
+    e16, b2, clk = exp16_init()
+    PORT_REVERSE = False
+    PORT_NEGATIVE = True
+    
+
+def port16rw(i):
+   data = num_to_bytes2(neg(i),rev=PORT_REVERSE)
+   data[0] = 255 # 8 bits for input SW
+   """
+   0-SW     1-LED
+   76543210 76543210
+   """
+   r = e16.read()
+   print(i, num_to_bin_str8(i), data, " --- ", neg(r), num_to_bin_str8(neg(r)))
+   e16.write(data)
+   clk.value(1)
+   sleep_ms(10)
+   clk.value(0) 
 
 
 """
@@ -477,6 +505,10 @@ class Executor:
             print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
+            
+            if EXP16_74LS374:
+                port16rw(self.a)
+                # temp test, ToDo: OUT/IN port + SO/SI
             
             if HW_DEBUG and HW_RGB:
                 i = 0
