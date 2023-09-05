@@ -88,7 +88,12 @@ def port16rw(i):
    e16.write(data)
    clk.value(1)
    sleep_ms(10)
-   clk.value(0) 
+   clk.value(0)
+   
+def port16r(addr=0):
+   r = e16.read()
+   print("port16r - read", r, neg(r), num_to_bin_str8(neg(r)))
+   return neg(r)
 
 
 """
@@ -502,6 +507,13 @@ class Executor:
             print("OUT",param,self.a)            
             if EXP16_74LS374:
                 port16rw(self.a)
+            self.pc += 2
+            
+        if inst=="IN":
+            print("IN",param,self.a)            
+            if EXP16_74LS374:
+                data = port16r(param)
+                self.a = data
             self.pc += 2
                 
         if inst=="MOV_A,A":
