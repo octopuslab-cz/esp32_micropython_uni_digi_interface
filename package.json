@@ -21,6 +21,8 @@
   ["examples/example06_s80.asm", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/examples/example06_s80.asm"],
   ["examples/example07_s80.asm", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/examples/example07_s80.asm"],
   ["examples/example08_s80.asm", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/examples/example08_s80.asm"],
+  ["examples/example09_s80.asm", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/examples/example09_s80.asm"],
+  ["examples/example10_s80.asm", "github:octopuslab-cz/esp32_micropython_uni_digi_interface/examples/example10_s80.asm"],
   
   ],
   "deps": [
