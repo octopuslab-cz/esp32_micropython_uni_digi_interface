@@ -23,7 +23,7 @@ HW_RGB = False
 DISPLAY8 = False
 DISPLAY_TM = False
 DISPLAY_LCD4 = False
-EXP16_74LS374 = False
+EXP16_74LS374 = True
 
 HW_DEBUG = True
 
@@ -498,6 +498,12 @@ class Executor:
                 self.pc += 3
                 
         # ------------- spec subroutines --------
+        if inst=="OUT":
+            print("OUT",param,self.a)            
+            if EXP16_74LS374:
+                port16rw(self.a)
+            self.pc += 2
+                
         if inst=="MOV_A,A":
             num_bc = self.c + self.b*256
             num_lh = self.l + self.h*256
@@ -532,11 +538,11 @@ class Executor:
             print("       ", self.vm)
             self.pc += 1
                
-        if inst=="MOV_C,C":
+        if inst=="MOV_C,C": # C-counter
             print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
             
-        if inst=="MOV_D,D":
+        if inst=="MOV_D,D": # D-display
             print("--> spec.sub. | 7seg. display ")
             addr = self.h*256 + self.l
             data8 = num_to_hex_str2(self.vm.get(addr))
@@ -548,7 +554,7 @@ class Executor:
             
         if inst=="MOV_E,E":
             print("--> spec.sub. | sleep 1 sec. (slEEp)")
-            sleep(1)
+            sleep(0.1)
             self.pc += 1  
             
         if inst=="MOV_H,H":

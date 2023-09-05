@@ -10,6 +10,7 @@ instructions = {
  'RLC':      0x07,
  'RRC':      0x0F,
  'LXI_B':    0x01,
+ 'OUT':      0xD3,
  'LXI_H':    0x21,
  'ADD_A':    0x87,
  'ADD_B':    0x80,

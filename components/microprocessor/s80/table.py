@@ -2,7 +2,7 @@
 
 """
 zero_param_instr    1  INSTR 
-single_param_instr  2  INSTR PARAM1
+single_param_instr  2  INSTR PARAM1 2: not 1 and not 3
 double_param_instr  3  INSTR PARAM1 PARAM2
 """
 
@@ -33,8 +33,7 @@ zero_param_instr = {
 double_param_instr = {
  'STA','LDA','SHLD','LHLD','LXI_B','LXI_H',
  'JMP','JC','JNC','JZ','JNZ','JP','JM','JPE','JPO',
- 'CALL','CC','CNC','CZ','CNZ','CP','CM','CPE','CPO',
- 'OUT','IN'
+ 'CALL','CC','CNC','CZ','CNZ','CP','CM','CPE','CPO'
 }
 
 
