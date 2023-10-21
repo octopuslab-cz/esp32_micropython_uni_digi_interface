@@ -75,3 +75,15 @@ class Hex2:
 
     def get_saved_hex2(self, index):
         return self.saved_arr[index]
+ 
+ 
+    def get_saved_program(self):
+        ret = ' '.join(self.saved_arr)
+        return ret
+    
+    
+    def get_program_num(self):
+        program_num = []
+        for hex_i in self.saved_arr:
+            program_num.append(int("0x"+hex_i))      # int
+        return program_num
