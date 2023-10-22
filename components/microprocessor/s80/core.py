@@ -1,8 +1,8 @@
-# octopusLAB - core - simple_80 virtual processor
-__version__ = "1.0.1" #
+# octopusLAB - core - simple_80 processor
+__version__ = "0.5.5" # 2023/10/22
 
 from time import sleep, sleep_ms
-from octopus_decor import octopus_duration
+from utils.octopus_decor import octopus_duration
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
@@ -11,7 +11,6 @@ from machine import Pin
 from utils.pinout import set_pinout
 pinout = set_pinout()
 import gc
-
 print("- init")
 print("core: ESP mem_free",gc.mem_free())
 gc.collect()
@@ -19,17 +18,17 @@ print("core: ESP mem_free",gc.mem_free())
 
 # Hw components:
 HW_LED = False
-HW_RGB = False
-DISPLAY8 = False
-DISPLAY_TM = False
+HW_RGB = True
+DISPLAY7 = False
+DISPLAY_TM = True
 DISPLAY_LCD4 = False
-EXP16_74LS374 = True
 
 HW_DEBUG = True
 
+
 if HW_LED: # Leds
-    from components.udi_hw import init_led
-    led = init_led(2)
+    from components.led import Led
+    led = Led(2)
     led.blink()
     
 def rgb_fill(ws, c=(0,0,0)):
@@ -37,63 +36,26 @@ def rgb_fill(ws, c=(0,0,0)):
         ws.color(c,i)
             
 if HW_RGB: # Leds
-    from components.ws_rgb import Rgb
+    from components.rgb import Rgb
     ws = Rgb(pinout.DEV1_PIN,8)
     # ws.rainbow_cycle()
     rgb_fill(ws,(100,0,0))
     sleep(0.3)
     rgb_fill(ws,(0,0,0))
    
-if DISPLAY_LCD4:
-    from components.udi_hw import i2c_init, lcd4_init, lcd4_show
-    i2c = i2c_init()
-    lcd = lcd4_init(i2c)
-    #              "****************"
-    lcd4_show(lcd, "start & init",3)
+
     
    
-if DISPLAY8:
+if DISPLAY7:
     from utils.octopus import disp7_init
     d7 = disp7_init()
-
-
+    
 if DISPLAY_TM:    
     from lib.tm1638 import TM1638
     tm = TM1638(stb=Pin(pinout.SPI_MOSI_PIN), clk=Pin(pinout.SPI_MISO_PIN), dio=Pin(pinout.SPI_CLK_PIN))
     tm.show2("0000  FF")
     # table1: matrix 4x4 - ABCD > K1 K2 K3 -
     btn_tab = {1:'E',2:'8',4:'4',8:'123',16:'C',32:'7',64:'3',128:'123',512:'0',1024:'6',2048:'2',8192:'9',16384:'5',32768:'1'}
-
-
-if EXP16_74LS374:
-    from octopus_digital import neg, reverse, int2bin, get_bit, set_bit
-    from octopus_digital import num_to_bin_str8
-    from universal_digital_interface import num_to_bytes2
-    from components.udi_hw import exp16_init
-    # expander instance, byty2 temp, clk 74LS374
-    e16, b2, clk = exp16_init()
-    PORT_REVERSE = False
-    PORT_NEGATIVE = True
-    
-
-def port16rw(i):
-   data = num_to_bytes2(neg(i),rev=PORT_REVERSE)
-   data[0] = 255 # 8 bits for input SW
-   """
-   0-SW     1-LED
-   76543210 76543210
-   """
-   r = e16.read()
-   print(i, num_to_bin_str8(i), data, " --- ", neg(r), num_to_bin_str8(neg(r)))
-   e16.write(data)
-   clk.value(1)
-   sleep_ms(10)
-   clk.value(0)
-   
-def port16r(addr=0):
-   r = e16.read()
-   print("port16r - read", r, neg(r), num_to_bin_str8(neg(r)))
-   return neg(r)
 
 
 """
@@ -298,6 +260,7 @@ class Executor:
             self.pc += 1
                     
         if inst=="LDA":
+            ## LDA a lb hb - Load A from memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0]*256 + param[1]
             print("LDA addr test", param[0], param[1], "-->",addr, self.vm.get(addr))
@@ -306,6 +269,7 @@ class Executor:
             self.pc += 3
             
         if inst=="STA":
+            ## STA a  lb hb - Store A to memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0]*256 + param[1]
             self.vm[addr] = self.a
@@ -343,11 +307,13 @@ class Executor:
             self.pc += 2
             
         if inst=="LXI_B":
+            ## LXI RP (B_C),lb hb - Load register pair immediate
             self.c = param[0]
             self.b = param[1] 
             self.pc += 3
             
         if inst=="LXI_H": # H byte3 / L byte2 ??? I L H
+            ## LXI RP (H_L),lb hb - Load register pair immediate
             self.l = param[0]
             self.h = param[1] 
             self.pc += 3
@@ -461,12 +427,13 @@ class Executor:
         #self.acc &= 0xF
             
         if inst=="JMP":
-            self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
+            #self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
+            self.pc = param[0]+param[1]*256 # 00 01 > 256 / 01 00 > 01  #v23.02
             if(self.debug):print("> JMP to ",self.pc)
                         
         if inst=="CALL":
             self.sp = self.pc + 3 # stack
-            self.pc = param[0]*256+param[1]
+            self.pc = param[0]+param[1]*256
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
                      
         if inst=="RET":
@@ -476,7 +443,7 @@ class Executor:
             
         if inst=="JNZ":
             if self.zb == 0:
-                self.pc = param[0]*256+param[1]
+                self.pc = param[0]+param[1]*256
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
@@ -490,7 +457,7 @@ class Executor:
                 
         if inst=="JNC":
             if self.cb == 0:
-                self.pc = param[0]*256+param[1]
+                self.pc = param[0]+param[1]*256
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
@@ -503,19 +470,6 @@ class Executor:
                 self.pc += 3
                 
         # ------------- spec subroutines --------
-        if inst=="OUT":
-            print("OUT",param,self.a)            
-            if EXP16_74LS374:
-                port16rw(self.a)
-            self.pc += 2
-            
-        if inst=="IN":
-            print("IN",param,self.a)            
-            if EXP16_74LS374:
-                data = port16r(param)
-                self.a = data
-            self.pc += 2
-                
         if inst=="MOV_A,A":
             num_bc = self.c + self.b*256
             num_lh = self.l + self.h*256
@@ -524,25 +478,14 @@ class Executor:
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
             
-            if EXP16_74LS374:
-                port16rw(self.a)
-                # temp test, ToDo: OUT/IN port + SO/SI
-            
-            if HW_DEBUG and HW_RGB:
+            if HW_DEBUG and DISPLAY_TM:
+                tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
                 i = 0
                 for a_bit in num_to_bin_str8(self.a):
                     if a_bit =="1": ws.color((100,0,0),7-i)
                     else: ws.color((0,0,0),7-i)
                     i += 1
                     if i > 7: i = 7
-            
-            if HW_DEBUG and DISPLAY_TM:
-                tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
-                
-            if HW_DEBUG and DISPLAY_LCD4:
-                lcd4_show(lcd, num_to_hex_str4(self.pc),2)
-                lcd4_show(lcd, num_to_bin_str8(self.a)+" | "+num_to_hex_str2(self.a),3)
-                
             self.pc += 1
             
         if inst=="MOV_B,B":
@@ -550,23 +493,23 @@ class Executor:
             print("       ", self.vm)
             self.pc += 1
                
-        if inst=="MOV_C,C": # C-counter
+        if inst=="MOV_C,C":
             print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
             
-        if inst=="MOV_D,D": # D-display
+        if inst=="MOV_D,D":
             print("--> spec.sub. | 7seg. display ")
             addr = self.h*256 + self.l
             data8 = num_to_hex_str2(self.vm.get(addr))
             print("[ "+num_to_hex_str4(addr)+ " | "+ data8+ " ]")
-            if DISPLAY8:
+            if DISPLAY7:
                d7.show(num_to_hex_str4(addr)+"  "+data8)
                sleep(0.5)             
             self.pc += 1
             
         if inst=="MOV_E,E":
             print("--> spec.sub. | sleep 1 sec. (slEEp)")
-            sleep(0.1)
+            sleep(1)
             self.pc += 1  
             
         if inst=="MOV_H,H":
@@ -584,7 +527,7 @@ class Executor:
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
 # -----------------------------------------
-def parse_file(uP, file_name,print_asm=True,debug=True):
+def parse_file(uP, file_name, print_asm=True, debug = True):
     pc = 0
     labels = {}
     variables = {}
@@ -662,14 +605,18 @@ def parse_file(uP, file_name,print_asm=True,debug=True):
                         program.append(parts[1])
                         program.append(parts[2])
                     else:
-                        try:                            
+                        try:
+                            #22: JMP 00 01 > 01 / xx addr / 01
+                            #23: JMP 01 00 > 01 / addr xx / addr --- ToDo > 255 program space
                             if i_pc > 2:                                
-                                print("---jmp---add 0x00")
-                                program.append(0x0) # simple jmp to (0 addr)
+                                ## print("---jmp---add 0x00")
+                                program.append("0x11") # tempor. place for 8080 compatibility
+                                print("--- 23 JMP --- temp ") # third: 11 aa -> aa 00
                             if i_pc > 1:
                                 i_p1 = parts[1]
                                 #if i_p1+":" in labels
                                 program.append(i_p1)
+                                #23: program.append(0x0)
                     
                         #if i_pc > 2: i_p2 = parts[2]
                         
@@ -696,7 +643,8 @@ def parse_file(uP, file_name,print_asm=True,debug=True):
         if str(part1)+":" in labels:
             print("---label---",part1+":",labels[part1+":"])
             print(program[i],"<---",labels[part1+":"])
-            program[i] = labels[part1+":"] # todo addr 2 bytes
+            program[i-1] = labels[part1+":"] # addr 2 bytes : temp addr -> addr 0 // limit: max 256 B program
+            program[i] = "0x00"
         i += 1
   
     return program
