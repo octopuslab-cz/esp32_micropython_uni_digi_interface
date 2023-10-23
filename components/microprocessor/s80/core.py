@@ -1,9 +1,10 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.5.5" # 2023/10/22
+__version__ = "1.0.5" # 2023/10/23
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
+from octopus_digital import hex_dump
 from components.microprocessor.s80 import instructions as instr
 from components.microprocessor.s80 import table
 from components.microprocessor.s80.table import get_instr_param
@@ -19,9 +20,10 @@ print("core: ESP mem_free",gc.mem_free())
 # Hw components:
 HW_LED = False
 HW_RGB = True
-DISPLAY7 = False
+DISPLAY8 = False
 DISPLAY_TM = True
 DISPLAY_LCD4 = False
+EXP16_74LS374 = False
 
 HW_DEBUG = True
 
@@ -36,19 +38,24 @@ def rgb_fill(ws, c=(0,0,0)):
         ws.color(c,i)
             
 if HW_RGB: # Leds
+    # from components.ws_rgb import Rgb
     from components.rgb import Rgb
     ws = Rgb(pinout.DEV1_PIN,8)
     # ws.rainbow_cycle()
     rgb_fill(ws,(100,0,0))
     sleep(0.3)
     rgb_fill(ws,(0,0,0))
-   
-
-    
-   
-if DISPLAY7:
+ 
+if DISPLAY_LCD4:
+    from components.udi_hw import i2c_init, lcd4_init, lcd4_show
+    i2c = i2c_init()
+    lcd = lcd4_init(i2c)
+    #              "****************"
+    lcd4_show(lcd, "start & init",3)
+ 
+if DISPLAY8:
     from utils.octopus import disp7_init
-    d7 = disp7_init()
+    d8 = disp7_init()
     
 if DISPLAY_TM:    
     from lib.tm1638 import TM1638
@@ -56,6 +63,37 @@ if DISPLAY_TM:
     tm.show2("0000  FF")
     # table1: matrix 4x4 - ABCD > K1 K2 K3 -
     btn_tab = {1:'E',2:'8',4:'4',8:'123',16:'C',32:'7',64:'3',128:'123',512:'0',1024:'6',2048:'2',8192:'9',16384:'5',32768:'1'}
+
+if EXP16_74LS374:
+    from octopus_digital import neg, reverse, int2bin, get_bit, set_bit
+    from octopus_digital import num_to_bin_str8
+    from universal_digital_interface import num_to_bytes2
+    from components.udi_hw import exp16_init
+    # expander instance, byty2 temp, clk 74LS374
+    e16, b2, clk = exp16_init()
+    PORT_REVERSE = False
+    PORT_NEGATIVE = True
+
+
+def port16rw(i):
+   data = num_to_bytes2(neg(i),rev=PORT_REVERSE)
+   data[0] = 255 # 8 bits for input SW
+   """
+   0-SW     1-LED
+   76543210 76543210
+   """
+   r = e16.read()
+   print(i, num_to_bin_str8(i), data, " --- ", neg(r), num_to_bin_str8(neg(r)))
+   e16.write(data)
+   clk.value(1)
+   sleep_ms(10)
+   clk.value(0)
+
+
+def port16r(addr=0):
+   r = e16.read()
+   print("port16r - read", r, neg(r), num_to_bin_str8(neg(r)))
+   return neg(r)
 
 
 """
@@ -75,6 +113,7 @@ class Executor:
         
         self.vm = {} # virtual memory
         self.vm[255] = 0
+        self.mem = [0] * 300 # 0-255 proram / 256-300 Data
         self.pc = 0  # programm counter
         self.sp = 0  # stack pointer - single
         
@@ -127,10 +166,36 @@ class Executor:
         print("|S|Z|0|C|0|P|1|C|")
         print(f"|{self.sb}|{self.zb}|0|{self.acb}|0|{self.pb}|1|{self.cb}|")
         print("="*32)
+    
+    def print_mem(self):
+        print("="*32)
+        hex_dump(self.mem,row=18)
+        print("-"*32)
         
         
     def print_vm(self):
         print("[ virtual memory ] - (16/32 bytes)")
+                
+        vm_values = list(self.vm.values())
+        
+        print("vm_values:")
+        for it in vm_values:
+            try:
+                 #print(i, chr(self.vm[i]),end=" ")
+                 print(it, end=" ")
+            except:
+                print("vm.Err values:")
+        
+        print()        
+        print("vm_chars:")        
+        for it in vm_values:
+            try:
+                 if it > 0:
+                     print(chr(it), end=" ")
+            except:
+                print("vm.Err chars:")
+                       
+        """
         vm_sorted = [0] * 16  # simple 16 Bytes
         # vm_sorted = dict(sorted(self.vm.items()))
         vm_offset = 256
@@ -154,7 +219,7 @@ class Executor:
             print("vm.Err:")
             print("list index out of range")
         print("="*32)
-  
+        """
     
     #------------------------------
     def execute(self, inst, param):
@@ -262,17 +327,22 @@ class Executor:
         if inst=="LDA":
             ## LDA a lb hb - Load A from memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
-            addr = param[0]*256 + param[1]
+            addr = param[0] + param[1]*256
             print("LDA addr test", param[0], param[1], "-->",addr, self.vm.get(addr))
-            self.a = self.vm.get(addr)
+            # self.a = self.vm.get(addr)
+            try:
+                self.a = self.mem[addr]
+            except:
+                self.a = "0xEE"
             self.zb = 1 if self.a == 0 else 0
             self.pc += 3
             
         if inst=="STA":
             ## STA a  lb hb - Store A to memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
-            addr = param[0]*256 + param[1]
-            self.vm[addr] = self.a
+            addr = param[0] + param[1]*256
+            # self.vm[addr] = self.a
+            self.mem[addr] = self.a
             self.pc += 3
 
         if inst=="CMA":
@@ -387,12 +457,16 @@ class Executor:
                     
         if inst=="MOV_A,M":
             addr = self.h*256+self.l
-            self.a = self.vm.get(addr)
+            # ToDo: if addr > 300 ...
+            # self.a = self.vm.get(addr)
+            self.a = self.mem[addr]
             #print("MOV_A,M addr test", self.h, self.l, "-->",addr,self.vm.get(addr))
             self.pc += 1
             
         if inst=="MOV_M,A":
-            self.vm[self.h*256+self.l] = self.a
+            addr = self.h*256+self.l
+            # self.vm[self.h*256+self.l] = self.a
+            self.mem[addr] = self.a 
             self.pc += 1
             
         if inst=="ADD_A":        
@@ -470,6 +544,21 @@ class Executor:
                 self.pc += 3
                 
         # ------------- spec subroutines --------
+        if inst=="OUT":
+            print("OUT",param,self.a)            
+            if EXP16_74LS374:
+                port16rw(self.a)
+            self.pc += 2
+
+
+        if inst=="IN":
+            print("IN",param,self.a)            
+            if EXP16_74LS374:
+                data = port16r(param)
+                self.a = data
+            self.pc += 2
+        
+             
         if inst=="MOV_A,A":
             num_bc = self.c + self.b*256
             num_lh = self.l + self.h*256
@@ -488,22 +577,22 @@ class Executor:
                     if i > 7: i = 7
             self.pc += 1
             
-        if inst=="MOV_B,B":
+        if inst=="MOV_B,B": # Virtual memory
             print("--> spec.sub. | vitrual memory:", self.vm)
             print("       ", self.vm)
             self.pc += 1
                
-        if inst=="MOV_C,C":
+        if inst=="MOV_C,C": # C-counter
             print("--> spec.sub. | pc:", self.pc)
             self.pc += 1
             
-        if inst=="MOV_D,D":
+        if inst=="MOV_D,D": # D-display
             print("--> spec.sub. | 7seg. display ")
             addr = self.h*256 + self.l
             data8 = num_to_hex_str2(self.vm.get(addr))
             print("[ "+num_to_hex_str4(addr)+ " | "+ data8+ " ]")
-            if DISPLAY7:
-               d7.show(num_to_hex_str4(addr)+"  "+data8)
+            if DISPLAY8:
+               d8.show(num_to_hex_str4(addr)+"  "+data8)
                sleep(0.5)             
             self.pc += 1
             
@@ -527,19 +616,21 @@ class Executor:
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
 # -----------------------------------------
-def parse_file(uP, file_name, print_asm=True, debug = True):
+def parse_file(uP, file_name, asm="",print_asm=True, debug = True):
     pc = 0
     labels = {}
     variables = {}
     program = []
                
     gc.collect()
-    f = open("examples/"+file_name)
-    fs = f.read()
-    f.close()
-    
-    print("---", file_name, "---")
-    
+    if len(file_name) > 2:
+        print("---", file_name, "---")
+        f = open("examples/"+file_name)
+        fs = f.read()
+        f.close()
+    else:
+        fs = asm
+     
     if print_asm:
         print("-"*32)
         print()
@@ -560,9 +651,13 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
             data_string=parts[1].strip().replace('"','')
             print("data_string:",data_string)
             for ch in data_string:
-                uP.vm[index_vm] = ord(ch)
+                # uP.vm[index_vm] = ord(ch)
+                uP.mem[index_vm] = ord(ch)
                 index_vm += 1
-            uP.vm[index_vm] = 0 # last "0" = stop
+            uP.mem[index_vm] = 0 # last "0" = stop
+            
+        # ToDo: #SUBPROC? load simple rutines for CALL with RET
+        # maybe RAM/ROM or all self.mem?
         
         # variables  $var = 123 ---> var: 123
         if clean_line.count("$"):
@@ -646,7 +741,16 @@ def parse_file(uP, file_name, print_asm=True, debug = True):
             program[i-1] = labels[part1+":"] # addr 2 bytes : temp addr -> addr 0 // limit: max 256 B program
             program[i] = "0x00"
         i += 1
-  
+    
+    print("*"*32)
+    #print("len(program)",len(program))
+    #for i in range(255,260):
+    #    print(i,uP.mem[i])       
+           
+    for i in range(len(program)):
+        # print(i,program[i])
+        uP.mem[i] = int(program[i])
+    
     return program
 
 DEBUG = False
