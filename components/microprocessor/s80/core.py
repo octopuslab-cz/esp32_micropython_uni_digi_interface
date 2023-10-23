@@ -616,7 +616,7 @@ class Executor:
             print(f"                      --->#{self.loop} |S{self.sb} Z{self.zb} C{self.cb}| {num_to_bin_str8(self.a)} | {self.a}, {hex(self.a)} {(self.pc)} ")
 
 # -----------------------------------------
-def parse_file(uP, file_name, asm="",print_asm=True, debug = True):
+def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
     pc = 0
     labels = {}
     variables = {}
