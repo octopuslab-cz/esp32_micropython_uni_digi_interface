@@ -37,7 +37,7 @@ print("ESP mem_free:",gc.mem_free())
 ##instr_set = [0x3e,0x7,0x0,0x3d,0xc2,0x0,0x3,0x0,0x3e,0x9,0x7,0x7,0x7,]
 # create_hex_program(program, info = True)
 
-def run_test(f="example05_s80.asm"):
+def run_test(f="example05_s80.asm",asm=""):
     #program = parse_file("example00_s80.asm")
     print()
     print("="*32)
@@ -47,7 +47,7 @@ def run_test(f="example05_s80.asm"):
     print()
     print("log from terminal -->")
     
-    program = parse_file(uP,f,print_asm=True)
+    program = parse_file(uP,f,asm,print_asm=True)
     hex_program = create_hex_program(program,prn=False)
 
     print("-"*32)
@@ -56,20 +56,25 @@ def run_test(f="example05_s80.asm"):
     print("- program_hex")
     print_hex_program(hex_program)
     ##print("- instr_set", instr_set)
+   
     print("-"*32)
-    
+        
     print("- len(instr_set):", len(hex_program))
     print("="*32)
-    run_hex_code(uP,hex_program,run_delay_ms=100)
+    run_hex_code(uP,hex_program,run_delay_ms=0)
 
     print()
     print("-"*32)
     print("ESP mem_free:",gc.mem_free())
     
+    print("-"*16 + "regs")
     uP.print_regs()
+    print("-"*16 + "virtual mem.")
     uP.print_vm()
+    uP.print_mem()
     print("asm file name:",f)
     print("core_s80 ver.",__version__)
+    sleep(5)
     
 
 """
@@ -87,7 +92,54 @@ run_test("example05_s80.asm")
 run_test("example06_s80.asm")
 run_test("example07_s80.asm")
 run_test("example08_s80.asm")
+
+run_test("example_s80_snake1.asm")
 """
 
+asm = """
+    NOP
+loop:
+    MVI_A 0b10101010 ; intro:
+    MOV_A,A          ; show acc -> 10101010
+    """
+print(asm)
 
-run_test("example_s80_logical2.asm")
+while True:
+    
+    
+
+    run_test(f="",asm=asm)
+    
+    
+    run_test("example00_s80.asm")
+    run_test("example01_s80.asm")
+    run_test("example02_s80.asm")
+    run_test("example03_s80.asm")
+    run_test("example05_s80.asm")   
+    
+    
+    run_test("example06_s80.asm")
+  
+    
+    
+    
+    run_test("test23_02.asm")
+    """
+    NOP
+loop:
+    MVI_A 0b10101010 ; intro:
+    MOV_A,A          ; show acc -> 10101010
+    MOV_E,E          ; sleep 1 sec.
+    CMA              ; complement / bit negation
+    MOV_A,A          ; show acc  -> 01010101
+    MOV_E,E          ; sleep
+;
+    JMP loop
+    """
+    # 22: 00 3e aa 7f 5b 2f 7f 5b c3 00 01 00
+    # 23: 00 3e aa 7f 5b 2f 7f 5b c3 01 00 00
+    
+    run_test("example_s80_counter.asm")
+    run_test("example_s80_snake1.asm")
+
+
