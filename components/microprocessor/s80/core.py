@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "1.0.5" # 2023/10/23
+__version__ = "1.0.6" # 2023/10/25
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -105,15 +105,16 @@ program = parse_file(uP,"example01_s80.asm")
 hex_program = create_hex_program(program,prn=False)
 run_hex_code(uP,hex_program,run_delay_ms=10)
 """
+MEM_MAX = 300
 
 class Executor:
     
     def __init__(self):
         self.debug = False
         
-        self.vm = {} # virtual memory
-        self.vm[255] = 0
-        self.mem = [0] * 300 # 0-255 proram / 256-300 Data
+        ## self.vm = {} # virtual memory
+        ## self.vm[255] = 0
+        self.mem = [0] * MEM_MAX # 0-255 proram / 256-300 Data
         self.pc = 0  # programm counter
         self.sp = 0  # stack pointer - single
         
@@ -172,7 +173,13 @@ class Executor:
         hex_dump(self.mem,row=18)
         print("-"*32)
         
+    def clear_mem(self):
+        print("="*32)
+        for i in range(MEM_MAX):
+            self.mem[i] = 0
+        print("-"*32)
         
+    """   
     def print_vm(self):
         print("[ virtual memory ] - (16/32 bytes)")
                 
@@ -195,31 +202,7 @@ class Executor:
             except:
                 print("vm.Err chars:")
                        
-        """
-        vm_sorted = [0] * 16  # simple 16 Bytes
-        # vm_sorted = dict(sorted(self.vm.items()))
-        vm_offset = 256
-        try:
-            for addr,data in self.vm.items():
-                 vm_sorted[addr-vm_offset] = data
-       
-            print(vm_sorted)
-            print("--- hexa:")
-            for ch in vm_sorted:
-                print(hex(ch),end=" ")
-                # print(num_to_hex_str2(hex(ch)),end=" ")
-            print()
-            print("--- string:")
-            for ch in vm_sorted:
-            # print(ch)
-            
-                print(chr(ch),end="")
-            print()
-        except:
-            print("vm.Err:")
-            print("list index out of range")
-        print("="*32)
-        """
+     """
     
     #------------------------------
     def execute(self, inst, param):
@@ -324,11 +307,10 @@ class Executor:
             #if self.b > 255: self.b = 0
             self.pc += 1
                     
-        if inst=="LDA":
-            ## LDA a lb hb - Load A from memory
+        if inst=="LDA": ## LDA a lb hb - Load A from memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0] + param[1]*256
-            print("LDA addr test", param[0], param[1], "-->",addr, self.vm.get(addr))
+            print("LDA addr test", param[0], param[1], "-->",addr, self.mem[addr])
             # self.a = self.vm.get(addr)
             try:
                 self.a = self.mem[addr]
@@ -337,36 +319,33 @@ class Executor:
             self.zb = 1 if self.a == 0 else 0
             self.pc += 3
             
-        if inst=="STA":
-            ## STA a  lb hb - Store A to memory
+        if inst=="STA": ## STA a  lb hb - Store A to memory
             # [0]=H [1]=L   0x01 0x03 = 256+3
             addr = param[0] + param[1]*256
             # self.vm[addr] = self.a
             self.mem[addr] = self.a
             self.pc += 3
 
-        if inst=="CMA":
-            # if bit8: return(bb ^ 0xff)
-            # else: return(~ bb)
+        if inst=="CMA": ## Compliment A / inverse
             self.a = self.a ^ 0xff
             self.pc += 1           
                      
-        if inst=="ANI":
+        if inst=="ANI": ## AMD immediate with A
             self.a = self.a & param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
             
-        if inst=="ORI":
+        if inst=="ORI": ## OR immediate with A
             self.a = self.a | param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
             
-        if inst=="XRI":
+        if inst=="XRI": ## ExclusiveOR immediate with A
             self.a = self.a ^ param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2 
         
-        if inst=="MVI_A":
+        if inst=="MVI_A": ## MVI r, - Move immediate to register
             self.a = param
             self.zb = 1 if self.a == 0 else 0
             self.pc += 2
@@ -375,18 +354,6 @@ class Executor:
             self.b = param
             self.zb = 1 if self.b == 0 else 0
             self.pc += 2
-            
-        if inst=="LXI_B":
-            ## LXI RP (B_C),lb hb - Load register pair immediate
-            self.c = param[0]
-            self.b = param[1] 
-            self.pc += 3
-            
-        if inst=="LXI_H": # H byte3 / L byte2 ??? I L H
-            ## LXI RP (H_L),lb hb - Load register pair immediate
-            self.l = param[0]
-            self.h = param[1] 
-            self.pc += 3
             
         if inst=="MVI_C":
             self.c = param
@@ -406,9 +373,20 @@ class Executor:
         if inst=="MVI_M":
             self.vm[self.h*256+self.l] = param
             self.zb = 1 if param == 0 else 0
-            self.pc += 2    
-        
-        if inst=="ANA_B":
+            self.pc += 2 
+            
+        if inst=="LXI_B": ## LXI RP (B_C),lb hb - Load register pair immediate
+            self.c = param[0]
+            self.b = param[1] 
+            self.pc += 3
+            
+        if inst=="LXI_H": # H byte3 / L byte2 ??? I L H
+            ## LXI RP (H_L),lb hb - Load register pair immediate
+            self.l = param[0]
+            self.h = param[1] 
+            self.pc += 3
+            
+        if inst=="ANA_B": ## AND register with A
             self.a = self.a & self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
@@ -419,7 +397,7 @@ class Executor:
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
             
-        if inst=="ORA_B":
+        if inst=="ORA_B": ## OR register with A
             self.a = self.a | self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
@@ -429,7 +407,7 @@ class Executor:
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
             
-        if inst=="XRA_B":
+        if inst=="XRA_B": ## ExclusiveOR register with A
             self.a = self.a ^ self.b
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
@@ -439,11 +417,11 @@ class Executor:
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
             
-        if inst=="MOV_B,A":
+        if inst=="MOV_B,A": ## B <- A
             self.b = self.a
             self.pc += 1
             
-        if inst=="MOV_A,B":
+        if inst=="MOV_A,B": ## A <- B
             self.a = self.b
             self.pc += 1
             
@@ -476,14 +454,14 @@ class Executor:
             if self.a > 255: self.a = self.a - 256 
             self.pc += 2
             
-        if inst=="CPI":
+        if inst=="CPI": ## Compare immediate with A
             compare  = param - self.a
             #self.zb = 1 if compare == 0 else 0
             self.set_c(compare)
             self.cb = 1 if compare > 0 else 0
             self.pc += 2
             
-        if inst=="RRC":        
+        if inst=="RRC": ## Rotate A right (with carry)      
             self.a = self.a >> 1
             self.pc += 1
             """
@@ -492,7 +470,7 @@ class Executor:
                 self.cb = 1
             """
                         
-        if inst=="RLC":        
+        if inst=="RLC": ## Rotate A left (with carry)       
             self.a = self.a << 1
             self.set_c(self.a)
             self.pc += 1
@@ -500,31 +478,31 @@ class Executor:
         #self.cy = self.acc >> 4
         #self.acc &= 0xF
             
-        if inst=="JMP":
+        if inst=="JMP": ## Unconditional jump
             #self.pc = param[0]*256+param[1] # direct to addr: 0x00 0xFF
             self.pc = param[0]+param[1]*256 # 00 01 > 256 / 01 00 > 01  #v23.02
             if(self.debug):print("> JMP to ",self.pc)
                         
-        if inst=="CALL":
+        if inst=="CALL": ## Unconditional subroutine call
             self.sp = self.pc + 3 # stack
             self.pc = param[0]+param[1]*256
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
                      
-        if inst=="RET":
+        if inst=="RET": ##  Unconditional return from subroutine
             self.pc = self.sp # stack
             if(self.debug): print("> RET to ",self.pc)
             self.sp = 0
             
-        if inst=="JNZ":
+        if inst=="JNZ": ## Conditional jump / not zerro
             if self.zb == 0:
                 self.pc = param[0]+param[1]*256
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
             
-        if inst=="JZ":
+        if inst=="JZ": ## 
             if self.zb == 1:
-                self.pc = param[1] # 0x00 0xFF
+                self.pc = param[0]+param[1]*256 # 0x00 0xFF
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
@@ -538,7 +516,7 @@ class Executor:
             
         if inst=="JC":
             if self.cb == 1:
-                self.pc = param[1] # 0x00 0xFF
+                self.pc = param[0]+param[1]*256 # 0x00 0xFF
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
@@ -559,7 +537,7 @@ class Executor:
             self.pc += 2
         
              
-        if inst=="MOV_A,A":
+        if inst=="MOV_A,A": # Main info report / regs
             num_bc = self.c + self.b*256
             num_lh = self.l + self.h*256
             print("--> R ","DEC BIN    HEX (B_C)" )
@@ -578,8 +556,8 @@ class Executor:
             self.pc += 1
             
         if inst=="MOV_B,B": # Virtual memory
-            print("--> spec.sub. | vitrual memory:", self.vm)
-            print("       ", self.vm)
+            print("--> spec.sub. | vitrual memory:")
+            self.print_mem()
             self.pc += 1
                
         if inst=="MOV_C,C": # C-counter
@@ -596,7 +574,7 @@ class Executor:
                sleep(0.5)             
             self.pc += 1
             
-        if inst=="MOV_E,E":
+        if inst=="MOV_E,E": # D-slEEp
             print("--> spec.sub. | sleep 1 sec. (slEEp)")
             sleep(1)
             self.pc += 1  
