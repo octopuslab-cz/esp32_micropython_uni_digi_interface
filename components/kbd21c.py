@@ -1,5 +1,6 @@
 # (c) OctopusLAB 2020-23
 # kbd21c - addr + data / 8 segment display TM1638 + kbd 3x7 
+__version__ = "1.0.3" # 2023/10/23
 
 
 BTN_TAB = {
@@ -23,6 +24,7 @@ BTN_TAB = {
 (128, 0, 0, 128, 0):"S",
 (64, 0, 0, 64, 0):"P",
 (16384, 0, 0, 0, 32):"-",
+(4096, 0, 0, 0, 8):"*",
 (8192, 0, 0, 0, 16):"R"
 }
 
@@ -35,7 +37,10 @@ class Hex2:
         self.saved_hex2_index = 0
 
 
-    def add(self, char):
+    def add(self, char): 
+        if char == '*': # add00
+            self.saved_arr.append('00')
+            self.saved_hex2_index += 1
             
         if char == 'S':
             print("DEBUG class:",len(self.saved_arr),self.saved_hex2_index)
@@ -52,6 +57,7 @@ class Hex2:
                 self.characters.append(char)
 
 
+ 
     def dec(self): # decrement index
         self.saved_hex2_index -= 1
         if self.saved_hex2_index < 0:
