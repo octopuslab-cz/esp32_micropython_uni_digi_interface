@@ -392,7 +392,7 @@ class Executor:
             self.pc += 1
             
         if inst=="ANA_C":
-            print(self.c , self.a & self.c)
+#           # print(self.c , self.a & self.c)
             self.a = self.a & self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
@@ -447,12 +447,19 @@ class Executor:
             self.mem[addr] = self.a 
             self.pc += 1
             
-        if inst=="ADD_A":        
-            #self.a = self.a + param + self.cy  #q#
+        if inst == "ADD_A":        # 0x87 — std 8080
+            self.a = self.a + self.a
+            self.set_c(self.a)
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 1            # 1 B!
+
+        if inst == "ADI":          # 0xC6 — add param
             self.a = self.a + param
             self.set_c(self.a)
-            if self.a > 255: self.a = self.a - 256 
-            self.pc += 2
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 2            # 2 B
             
         if inst == "ADD_B":
             self.a += self.b

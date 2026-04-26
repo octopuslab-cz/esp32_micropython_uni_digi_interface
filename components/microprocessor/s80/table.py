@@ -24,9 +24,10 @@ zero_param_instr = {
  'ANA_A','ANA_B','ANA_C','ANA_H','ANA_L','ANA_M',
  'XRA_A','XRA_B','XRA_C','XRA_H','XRA_L','XRA_M',
  'ORA_A','ORA_B','ORA_C','ORA_H','ORA_L','ORA_M', 
+ 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M'
 }
 
-# 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M',
+
 
 
 # instr: "address"
