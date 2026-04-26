@@ -1,0 +1,148 @@
+MPY: soft reboot
+- init
+mem_free 174736
+- init
+core: ESP mem_free 135840
+core: ESP mem_free 145856
+- instructions revers. (opcode/instr list)
+--- decorator --- @octopus_duration:
+--- decorator --- @octopus_duration:
+------------------------------
+mem_free: 139760
+--- start ---
+================================
+[ system registers ]
+a: 0 0x0 00000000
+b: 0  | c: 0
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
+mem_free: 139456
+*** DEBUG before write: <class 'Executor'>
+--- example11_s80.asm ---
+--------------------------------
+
+; example11_s80 - multiplication B * C
+; result: A = B * C = 9 * 7 = 63 = 0x3F
+; method: repeated addition  A += B  (C times)
+;
+start:
+    MVI_B 0x9  ; B = 9  (multiplicand)
+    MVI_C 0x7  ; C = 7  (counter / multiplier)
+    MVI_A 0x0  ; A = 0  (accumulator)
+;
+loop:
+    ADD_B      ; A = A + B
+    DCR_C      ; C--
+    JNZ loop   ; if C != 0 --> repeat
+;
+; A = 63 = 0x3F = 0b00111111
+    NOP
+end.
+
+--------------------------------
+[ two pass - translator ]
+[---1---] first pass:
+- temp_variables {}
+
+--------------------------------
+[---2---] second pass:
+0  pc: 0  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_B', '0x9']
+1  pc: 2  instr: 0x6  pc+ 2  p1,p2  
+---parts: ['MVI_C', '0x7']
+2  pc: 4  instr: 0xe  pc+ 2  p1,p2  
+---parts: ['MVI_A', '0x0']
+3  pc: 6  instr: 0x3e  pc+ 2  p1,p2  
+4  pc: 6  instr: 0  pc+ 0  p1,p2  
+---parts: ['ADD_B']
+5  pc: 7  instr: 0x80  pc+ 1  p1,p2  
+---parts: ['DCR_C']
+6  pc: 8  instr: 0xd  pc+ 1  p1,p2  
+---parts: ['JNZ', 'loop']
+7  pc: 11  instr: 0xc2  pc+ 3  p1,p2  
+---parts: ['NOP']
+8  pc: 12  instr: 0x0  pc+ 1  p1,p2  
+9  pc: 12  instr: 0  pc+ 0  p1,p2  
+- temp_labels: {'loop:': 6, 'start:': 0}
+- temp_prog. : [6, '0x9', 14, '0x7', 62, '0x0', 128, 13, 194, 'loop', 0, 0]
+- III.1826,1887,227?
+
+[---3---] third pass:
+- replaces labels with addr.
+---label--- loop: 6
+loop <--- 6
+********************************
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+------------------------------
+- program_num [6, 9, 14, 7, 62, 0, 128, 13, 194, 6, 0, 0]
+------------------------------
+len(instr_set): 12
+==============================
+0 {1} 06   MVI_B 0x9
+                      --->#1 |S0 Z0 C0| 00000000 | 0, 0x0 2 
+2 {1} 0e   MVI_C 0x7
+                      --->#2 |S0 Z0 C0| 00000000 | 0, 0x0 4 
+4 {1} 3e   MVI_A 0x0
+                      --->#3 |S0 Z1 C0| 00000000 | 0, 0x0 6 
+6 {0} 80   ADD_B
+                      --->#4 |S0 Z0 C0| 00001001 | 9, 0x9 7 
+7 {0} 0d   DCR_C
+                      --->#5 |S0 Z0 C0| 00001001 | 9, 0x9 8 
+8 {2} c2   JNZ 06 00
+                      --->#6 |S0 Z0 C0| 00001001 | 9, 0x9 6 
+6 {0} 80   ADD_B
+                      --->#7 |S0 Z0 C0| 00010010 | 18, 0x12 7 
+7 {0} 0d   DCR_C
+                      --->#8 |S0 Z0 C0| 00010010 | 18, 0x12 8 
+8 {2} c2   JNZ 06 00
+                      --->#9 |S0 Z0 C0| 00010010 | 18, 0x12 6 
+6 {0} 80   ADD_B
+                      --->#10 |S0 Z0 C0| 00011011 | 27, 0x1b 7 
+7 {0} 0d   DCR_C
+                      --->#11 |S0 Z0 C0| 00011011 | 27, 0x1b 8 
+8 {2} c2   JNZ 06 00
+                      --->#12 |S0 Z0 C0| 00011011 | 27, 0x1b 6 
+6 {0} 80   ADD_B
+                      --->#13 |S0 Z0 C0| 00100100 | 36, 0x24 7 
+7 {0} 0d   DCR_C
+                      --->#14 |S0 Z0 C0| 00100100 | 36, 0x24 8 
+8 {2} c2   JNZ 06 00
+                      --->#15 |S0 Z0 C0| 00100100 | 36, 0x24 6 
+6 {0} 80   ADD_B
+                      --->#16 |S0 Z0 C0| 00101101 | 45, 0x2d 7 
+7 {0} 0d   DCR_C
+                      --->#17 |S0 Z0 C0| 00101101 | 45, 0x2d 8 
+8 {2} c2   JNZ 06 00
+                      --->#18 |S0 Z0 C0| 00101101 | 45, 0x2d 6 
+6 {0} 80   ADD_B
+                      --->#19 |S0 Z0 C0| 00110110 | 54, 0x36 7 
+7 {0} 0d   DCR_C
+                      --->#20 |S0 Z0 C0| 00110110 | 54, 0x36 8 
+8 {2} c2   JNZ 06 00
+                      --->#21 |S0 Z0 C0| 00110110 | 54, 0x36 6 
+6 {0} 80   ADD_B
+                      --->#22 |S0 Z0 C0| 00111111 | 63, 0x3f 7 
+7 {0} 0d   DCR_C
+                      --->#23 |S0 Z1 C0| 00111111 | 63, 0x3f 8 
+8 {2} c2   JNZ 06 00
+                      --->#24 |S0 Z1 C0| 00111111 | 63, 0x3f 11 
+11 {0} 00   NOP
+                      --->#25 |S0 Z1 C0| 00111111 | 63, 0x3f 12 
+.:. function:  run_hex_code
+--> duration (milis.) --> 2591
+
+------------------------------
+mem_free: 127120
+================================
+[ system registers ]
+a: 63 0x3f 00111111
+b: 9  | c: 0
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
