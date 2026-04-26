@@ -16,7 +16,7 @@ zero_param_instr = {
  'MOV_A,B','MOV_C,B','MOV_L,B','MOV_H,B','MOV_M,B',
  'MOV_A,C','MOV_B,C','MOV_L,C','MOV_H,C','MOV_M,C','MOV_A,M',
  'MOV_A,A','MOV_B,B','MOV_C,C','MOV_D,D','MOV_E,E','MOV_L,L','MOV_H,H',
- 'INR_A','INR_B','INR_C','INR_L','INR_H','INX_B','INX_H'
+ 'INR_A','INR_B','INR_C','INR_L','INR_H','INX_B','INX_H',
  'DCR_A','DCR_B','DCR_C','DCR_L','DCR_H','DCX_B','DCX_H',
  'ADC_A','ADC_B','ADC_C','ADC_H','ADC_L','ADC_M',
  'SUB_A','SUB_B','SUB_C','SUB_H','SUB_L','SUB_M',

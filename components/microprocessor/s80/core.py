@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "1.0.6" # 2023/10/25
+__version__ = "2.1" # 2026
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -19,9 +19,9 @@ print("core: ESP mem_free",gc.mem_free())
 
 # Hw components:
 HW_LED = False
-HW_RGB = True
+HW_RGB = False
 DISPLAY8 = False
-DISPLAY_TM = True
+DISPLAY_TM = False
 DISPLAY_LCD4 = False
 EXP16_74LS374 = False
 
@@ -39,7 +39,7 @@ def rgb_fill(ws, c=(0,0,0)):
             
 if HW_RGB: # Leds
     # from components.ws_rgb import Rgb
-    from components.rgb import Rgb
+    from components.ws_rgb import Rgb
     ws = Rgb(pinout.DEV1_PIN,8)
     # ws.rainbow_cycle()
     rgb_fill(ws,(100,0,0))
@@ -454,6 +454,34 @@ class Executor:
             if self.a > 255: self.a = self.a - 256 
             self.pc += 2
             
+        if inst == "ADD_B":
+            self.a += self.b
+            self.set_c(self.a)
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 1    
+            
+        if inst == "ADD_C":
+            self.a += self.c
+            self.set_c(self.a)
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 1
+
+        if inst == "ADD_H":
+            self.a += self.h
+            self.set_c(self.a)
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 1
+
+        if inst == "ADD_L":
+            self.a += self.l
+            self.set_c(self.a)
+            if self.a > 255: self.a -= 256
+            self.set_z(self.a)
+            self.pc += 1
+            
         if inst=="CPI": ## Compare immediate with A
             compare  = param - self.a
             #self.zb = 1 if compare == 0 else 0
@@ -461,14 +489,10 @@ class Executor:
             self.cb = 1 if compare > 0 else 0
             self.pc += 2
             
-        if inst=="RRC": ## Rotate A right (with carry)      
-            self.a = self.a >> 1
-            self.pc += 1
-            """
-            if self.a > 255:
-                self.a = 0
-                self.cb = 1
-            """
+        if inst == "RRC": ## Rotate A right (with carry)
+            self.cb = self.a & 1
+            self.a = ((self.a >> 1) | (self.cb << 7)) & 0xFF
+            self.pc += 1         
                         
         if inst=="RLC": ## Rotate A left (with carry)       
             self.a = self.a << 1
@@ -670,7 +694,8 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
                     i_pc = get_instr_param(i1)
                     pc += i_pc
                     i_hex = hex(instr.instructions[i1])
-                    program.append(hex(int(i_hex)))
+                    #FIX2604: program.append(hex(int(i_hex)))
+                    ## program.append(hex(int(i_hex, 16)))
                     
                     if i1 =="LDA" or i1 =="STA" or i1 == "LXI_B" or i1 == "LXI_H": # ToDo in list
                         print("-LD/ST-A-add",parts[1],parts[2])
@@ -679,6 +704,7 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
                         program.append(parts[2])
                     else:
                         try:
+                            """
                             #22: JMP 00 01 > 01 / xx addr / 01
                             #23: JMP 01 00 > 01 / addr xx / addr --- ToDo > 255 program space
                             if i_pc > 2:                                
@@ -690,6 +716,15 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
                                 #if i_p1+":" in labels
                                 program.append(i_p1)
                                 #23: program.append(0x0)
+                                """
+                            program.append(instr.instructions[i1])  # opcode jako int
+
+                            if i_pc == 2:
+                                program.append(parts[1])  # immediate
+
+                            elif i_pc == 3:
+                                program.append(parts[1])  # label / low byte (zatím string)
+                                program.append(0)         # placeholder high byte
                     
                         #if i_pc > 2: i_p2 = parts[2]
                         
@@ -714,11 +749,12 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
     
     for part1 in program:
         if str(part1)+":" in labels:
-            print("---label---",part1+":",labels[part1+":"])
-            print(program[i],"<---",labels[part1+":"])
-            program[i-1] = labels[part1+":"] # addr 2 bytes : temp addr -> addr 0 // limit: max 256 B program
-            program[i] = "0x00"
-        i += 1
+            print("---label---", str(part1)+":", labels[str(part1)+":"])
+            print(program[i], "<---", labels[str(part1)+":"])
+            program[i] = labels[str(part1)+":"]   # low byte adresy
+            # program[i+1] je již 0 (placeholder)
+        i += 1    
+       
     
     print("*"*32)
     #print("len(program)",len(program))
@@ -727,7 +763,18 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
            
     for i in range(len(program)):
         # print(i,program[i])
-        uP.mem[i] = int(program[i])
+        ##FIX2604 uP.mem[i] = int(program[i])
+        ##uP.mem[i] = int(program[i], 16)
+        val = program[i]
+
+        try:
+            if isinstance(val, int):
+                uP.mem[i] = val
+            else:
+                uP.mem[i] = int(val, 0)  # auto base
+        except:
+            print("ERR at index", i, "value:", val)
+            raise        
     
     return program
 
@@ -756,7 +803,8 @@ def create_hex_program(p, prn=True, info=False):
             else:
                 if prn: print(hex(int(hex_i)), end=",")
                 #hex_program.append(hex(int(hex_i))) # hex
-                hex_program.append((int(hex_i)))      # int
+                #FIC_CL26 hex_program.append((int(hex_i)))      # int
+                hex_program.append(int(hex_i, 0) if isinstance(hex_i, str) else hex_i)
         except:
             print(str(hex_i)+"??? ", end=",")
     if prn: print("]", end="")
@@ -807,7 +855,9 @@ def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
             # Err = "list index out of range"
         else:
             print(hex(instr_set[pc]), "???")
-            # pc += 1
+            pc += 1
+ 
+            
         ##print("> uP.pc:", uP.pc, len(instr_set))
         if uP.pc >= len(instr_set):
             run_code = False
