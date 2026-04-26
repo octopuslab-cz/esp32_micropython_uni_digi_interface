@@ -447,6 +447,16 @@ class Executor:
             self.mem[addr] = self.a 
             self.pc += 1
             
+        if inst == "MOV_M,B":
+            addr = self.h*256 + self.l
+            self.mem[addr] = self.b
+            self.pc += 1
+            
+        if inst == "MOV_M,C":
+            addr = self.h*256 + self.l
+            self.mem[addr] = self.c
+            self.pc += 1    
+            
         if inst == "ADD_A":        # 0x87 — std 8080
             self.a = self.a + self.a
             self.set_c(self.a)
