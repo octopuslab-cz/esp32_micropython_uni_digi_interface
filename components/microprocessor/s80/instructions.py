@@ -13,6 +13,7 @@ instructions = {
  'OUT':     0xD3,
  'IN':      0xDB,
  'LXI_H':   0x21,
+ 'ADI': 	0xC6,
  'ADD_A':   0x87,
  'ADD_B':   0x80,
  'ADD_C':   0x81,

@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "2.1" # 2026
+__version__ = "0.3" # 2026
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -11,11 +11,14 @@ from components.microprocessor.s80.table import get_instr_param
 from machine import Pin
 from utils.pinout import set_pinout
 pinout = set_pinout()
+
 import gc
 print("- init")
 print("core: ESP mem_free",gc.mem_free())
 gc.collect()
 print("core: ESP mem_free",gc.mem_free())
+
+MEM_MAX = 300
 
 # Hw components:
 HW_LED = False
@@ -25,7 +28,8 @@ DISPLAY_TM = False
 DISPLAY_LCD4 = False
 EXP16_74LS374 = False
 
-HW_DEBUG = True
+HW_DEBUG = False
+DEBUG = False
 
 
 if HW_LED: # Leds
@@ -105,7 +109,6 @@ program = parse_file(uP,"example01_s80.asm")
 hex_program = create_hex_program(program,prn=False)
 run_hex_code(uP,hex_program,run_delay_ms=10)
 """
-MEM_MAX = 300
 
 class Executor:
     
@@ -370,11 +373,11 @@ class Executor:
             self.zb = 1 if self.h == 0 else 0
             self.pc += 2
             
-        if inst=="MVI_M":
-            self.vm[self.h*256+self.l] = param
+        if inst=="MVI_M": 
+            self.mem[self.h*256+self.l] = param
             self.zb = 1 if param == 0 else 0
             self.pc += 2 
-            
+                        
         if inst=="LXI_B": ## LXI RP (B_C),lb hb - Load register pair immediate
             self.c = param[0]
             self.b = param[1] 
@@ -436,14 +439,12 @@ class Executor:
         if inst=="MOV_A,M":
             addr = self.h*256+self.l
             # ToDo: if addr > 300 ...
-            # self.a = self.vm.get(addr)
             self.a = self.mem[addr]
             #print("MOV_A,M addr test", self.h, self.l, "-->",addr,self.vm.get(addr))
             self.pc += 1
             
         if inst=="MOV_M,A":
             addr = self.h*256+self.l
-            # self.vm[self.h*256+self.l] = self.a
             self.mem[addr] = self.a 
             self.pc += 1
             
@@ -608,7 +609,7 @@ class Executor:
         if inst=="MOV_D,D": # D-display
             print("--> spec.sub. | 7seg. display ")
             addr = self.h*256 + self.l
-            data8 = num_to_hex_str2(self.vm.get(addr))
+            data8 = num_to_hex_str2(self.mem.get(addr))
             print("[ "+num_to_hex_str4(addr)+ " | "+ data8+ " ]")
             if DISPLAY8:
                d8.show(num_to_hex_str4(addr)+"  "+data8)
@@ -678,10 +679,14 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
         # ToDo: #SUBPROC? load simple rutines for CALL with RET
         # maybe RAM/ROM or all self.mem?
         
-        # variables  $var = 123 ---> var: 123
+        # variables  $var = 123 / var: 123
         if clean_line.count("$"):
-            var_parts = clean_line.split(";")[0].split("=")
-            variables[var_parts[0].strip().replace("$","")] = var_parts[1].strip()
+            clean_line = clean_line.replace(":", "=") 
+            var_parts = clean_line.split("=")
+            if len(var_parts) >= 2:
+                variables[var_parts[0].strip().replace("$","")] = var_parts[1].strip()    
+            
+            
         
     print("- temp_variables",variables)
        
@@ -795,7 +800,6 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
     
     return program
 
-DEBUG = False
 
 print("- instructions revers. (opcode/instr list)")
 opcodes = {}
@@ -838,29 +842,31 @@ def print_hex_program(p): # really hex )
 def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
     pc, run_code = 0,True
     uP.pc, uP.is_running = 0, True
+    ii = 0
     
     while run_code and uP.is_running: # max loop
         if run: pc = uP.pc
         instr = opcodes.get(int(instr_set[pc]))
         if DEBUG: print("instr:", instr)
         if instr:
+            ii = ii + 1
             # try:
             hex_i0 = num_to_hex_str2(int(instr_set[pc]))+"  "
             if instr in table.zero_param_instr:
-                print(pc,"{0}",hex_i0, instr)
+                print(ii, pc,"{0}",hex_i0, instr)
                 add_pc = 1
                 param = ""
 
             if instr in table.double_param_instr:
                 param1 = instr_set[pc+1]
                 param2 = instr_set[pc+2]
-                print(pc,"{2}",hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
+                print(ii, pc,"{2}",hex_i0 , instr, num_to_hex_str2(param1), num_to_hex_str2(param2))
                 add_pc = 3
                 param = param1, param2
                 
             if (instr not in table.double_param_instr) and (instr not in table.zero_param_instr):
                 param = instr_set[pc+1]
-                print(pc,"{1}",hex_i0 , instr, hex(param))
+                print(ii, pc,"{1}",hex_i0 , instr, hex(param))
                 add_pc = 2
                 
             if run:
