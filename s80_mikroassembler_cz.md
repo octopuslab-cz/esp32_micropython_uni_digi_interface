@@ -30,7 +30,7 @@ Virtuální procesor s80 byl inspirován architekturou Intel 8080. Má 8bitové 
 ### Paměť
 
 Paměť má celkem **300 bytů**:
-(je možno jí se operativně zvětšit, vycházíme z možností ESP s menší pamětí a zároveň s potřeb, kdy nám tato velikost bohatě stačí)
+(je možno jí operativně zvětšit, vycházíme z možností ESP s menší pamětí a zároveň s potřeb, kdy nám tato velikost bohatě stačí)
 - `0x00–0xFF` (0–255) — programová paměť (kód)
 - `0x100+` (256+) — datová oblast (`#DATA` řetězce, RAM přes H:L)
 
