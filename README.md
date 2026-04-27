@@ -160,6 +160,10 @@ FF00 | virtual ROM  | sub_procedudes
 
 ```
 
+---
+
+[S80 Microassembler (EN)](s80_microassembler_en.md) | [S80 Microassembler (CZ)](s80_microassembler_cz.md)
+
 
 ---
 
