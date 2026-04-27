@@ -6,7 +6,7 @@
 
 ## Architektura procesoru s80
 
-Virtuální procesor s80 je inspirován architekturou Intel 8080. Má 8bitové registry, jednoduchou paměť a příznakové bity.
+Virtuální procesor s80 byl inspirován architekturou Intel 8080. Má 8bitové registry, jednoduchou paměť a příznakové bity.
 
 ### Registry
 
