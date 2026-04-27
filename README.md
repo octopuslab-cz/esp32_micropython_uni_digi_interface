@@ -10,6 +10,16 @@ for revival / commissioning / **testing** / simulation / emulation / ... **8-bit
 ![MicroPython](https://img.shields.io/badge/MicroPython-supported-brightgreen.svg)
 ![ASM 8080](https://img.shields.io/badge/ASM-Intel_8080-orange.svg)
 
+## Motivation
+
+The project originally started as a **universal digital interface for 8-bit systems**, designed for revival, testing, and fine-grained control of CPUs, memory, and I/O ports. The goal was to create a tool that provides transparent insight into the internal behavior of both historical and newly built 8-bit hardware, making diagnostics and experimentation significantly easier.
+
+During development, a practical limitation emerged: some early microprocessors—most notably the Intel 4004—are now extremely rare or practically unavailable. To overcome this, we implemented a **software emulation of the 4004**, allowing us to run example programs and explore its architecture without requiring physical hardware.
+
+Building on this foundation, the project evolved into a **universal S80 emulator**, inspired by the first generation of 8-bit microprocessors, primarily the Intel 8080/8085 family.
+
+The result is a gradually evolving **testing and educational platform** that bridges real hardware and emulation, enabling deeper understanding of early CPU architectures while providing a flexible environment for experimentation, simulation, and learning—offering a combination that is rarely found elsewhere.
+
 ---
 
 ## 4-bit (Intel 4004 - 1970) version
