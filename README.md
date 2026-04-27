@@ -20,6 +20,8 @@ Building on this foundation, the project evolved into a **universal S80 emulator
 
 The result is a gradually evolving **testing and educational platform** that bridges real hardware and emulation, enabling deeper understanding of early CPU architectures while providing a flexible environment for experimentation, simulation, and learning—offering a combination that is rarely found elsewhere.
 
+![S80 Emulator](img/s80emulator.png)
+
 ---
 
 ## 4-bit (Intel 4004 - 1970) version
