@@ -4,6 +4,14 @@
 
 for revival / commissioning / **testing** / simulation / emulation / ... **8-bit computers**, **microprocesors**, RAM, ROM, I/O ports...
 
+## ⚙️ Core Technologies
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![MicroPython](https://img.shields.io/badge/MicroPython-supported-brightgreen.svg)
+![ASM 8080](https://img.shields.io/badge/ASM-Intel_8080-orange.svg)
+
+---
+
 ## 4-bit (Intel 4004 - 1970) version
 
 https://github.com/octopuslab-cz/micropython_4004-emul
@@ -143,8 +151,7 @@ FF00 | virtual ROM  | sub_procedudes
 
 ---
 
-## Inspitation and links
-
+## Inspiration and links
 
 https://github.com/GodTamIt/assembler
 
