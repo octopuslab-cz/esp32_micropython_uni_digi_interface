@@ -2,7 +2,7 @@
 Universal Digital Interface - Monitor
 (c) 2016-23 OctopusLab
 """
-ver = "0.2.0" # basic - beta
+ver = "0.3.1 | 2026-05" # basic - beta
 
 from time import sleep, sleep_ms
 from universal_digital_interface import Universal_interface
@@ -10,6 +10,8 @@ from octopus_digital import neg, reverse, get_bit, set_bit # int2bin
 from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num_to_hex_str2
 from octopus_digital import bin_str_to_int, hex_dump, ascii_table
 from mini_terminal import terminal_info, terminal_color, terminal_clear
+from components.microprocessor.s80.core import __version__, Executor, create_hex_program, print_hex_program, parse_file, run_hex_code
+
 from gc import mem_free
 
 ui = Universal_interface()
@@ -45,9 +47,20 @@ print(i, num_to_hex_str4(i), data8, num_to_bytes(i,rev=False))
 DEBUG = False
 DISPLAY8 = False
 terminal_run = True
-PROCESOR = "Z80"
+PROCESOR = "s80"
 machine_code = () # table
-address = 0   
+address = 0
+
+uP = Executor()
+
+# init vM  |  max size (for test) only 512 B
+for i in range(256):
+    vM.append(0)
+    
+uP.memory = vM
+
+for i in range(256):
+    vMtemp.append(0)
     
 if DISPLAY8:
     from components.display8 import Display8
@@ -83,6 +96,7 @@ def print_help():
     print(" Copy         C <start> <end> <dest>")
     print(" Dump         D <start>")
     print(" Go           G <address>")
+    print(" Executr      E")
     print(" Help         H")
     print(" Clear screen L")
     print(" Info         I")
@@ -106,17 +120,10 @@ def print_ascii_table():
     ascii_table(1)
 
 
-# init vM  |  max size (for test) only 512 B
-for i in range(256):
-    vM.append(0)
-
-for i in range(256):
-    vMtemp.append(0)
-
 # ===========================================
 while terminal_run:
     terminal_clear()    
-    print(f"UDI Monitor {ver} | OctopusLAB 2016-22")
+    print(f"UDI Monitor {ver} | OctopusLAB 2016-26")
     
     try:
        input_str = input(terminal_color("> ", 32))
@@ -170,7 +177,43 @@ while terminal_run:
                 ui.i2c.writeto(39, bytes2)
                 data8 = num_to_hex_str2(ui.read16d()[1])
                 print(" ", data8, end="")
-
+                
+    if cmd0 == "E":
+        # Check if there is anything in memory to run
+        # We check the first few bytes, or use sum()
+        if all(v == 0 for v in vM[:16]):
+            print("Warning: Memory at 0x0000 is empty (NOPs). Load a program first.")
+        else:
+            # Get start address from cmd1 (default 0)
+            try:
+                start_addr = int(cmd1, 0)
+            except:
+                start_addr = 0
+                
+            print(f"Executing from address: {num_to_hex_str4(start_addr)}...")
+            print("-" * 30)
+            
+            try:
+                # Reset CPU state before run
+                uP.pc = start_addr
+                uP.is_running = True
+                
+                # We pass vM as the instruction set
+                # uP will execute instructions one by one
+                run_hex_code(uP, vM, run_delay_ms=1)
+                
+                print("-" * 30)
+                print("Execution finished.")
+                # Show final state of registers for debugging
+                print(f"Final state: A:{uP.a:02x} B:{uP.b:02x} C:{uP.c:02x} HL:{uP.h:02x}{uP.l:02x} PC:{uP.pc:04x}")
+            
+            except Exception as e:
+                print(f"Runtime Error: {e}")
+                if DEBUG: raise e # Show full traceback only in debug mode
+        
+        uP.print_regs()
+        print("-"*16 + "virtual mem.")
+        uP.print_mem()
      
     # --------------- virtual memory
     if cmd0.upper() == "ZV": # reset vM to ZERO
@@ -246,16 +289,38 @@ while terminal_run:
         
   
     if cmd0.upper() == "LOAD": # todo: if file dont exist
-        file = cmd1
-        if len(file)<3: 
-            file = "test.hex"
+        filename = cmd1
+        if len(filename) < 3: 
+            filename = "test.hex"
             
-        f = open("data/" + file)
-        fs = f.read()
-        f.close()
-        for i in range(256):
-            b8 = fs[i*2:i*2+2]
-            # print(i, b8, int("0x"+b8))
-            vM[i]=int("0x"+b8)
-        
-        # print(fs)
+        try:
+            # Attempt to open the file from the data/ subdirectory
+            with open("data/" + filename, "r") as f:
+                fs_raw = f.read()
+            
+            # 1. Remove all whitespace (spaces, tabs, newlines)
+            # This creates a clean hex string like "2e002601..."
+            fs = "".join(fs_raw.split()) 
+            
+            print(f"Loading {filename}...")
+            if DEBUG: print("Clean hex string:", fs)
+            
+            # 2. Determine the number of pairs (bytes) to load
+            # Floor division (// 2) automatically ignores a trailing odd character
+            num_bytes = len(fs) // 2
+            bytes_to_load = min(256, num_bytes)
+            
+            # 3. Load data into virtual memory (vM)
+            for i in range(bytes_to_load):
+                byte_str = fs[i*2 : i*2+2]
+                try:
+                    vM[i] = int(byte_str, 16)
+                except ValueError:
+                    print(f"ERR: '{byte_str}' at position {i} is not a valid hex!")
+                    break
+            
+            print(f"Done. Loaded {bytes_to_load} bytes.")
+
+        except OSError:
+            # File not found or cannot be opened - warning only, no crash
+            print(f"Warning: File 'data/{filename}' not found.")
