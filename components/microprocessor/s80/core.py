@@ -22,7 +22,7 @@ MEM_MAX = 300
 
 # Hw components:
 HW_LED = False
-HW_RGB = False
+HW_RGB = True
 DISPLAY8 = False
 DISPLAY_TM = False
 DISPLAY_LCD4 = False
@@ -43,12 +43,14 @@ def rgb_fill(ws, c=(0,0,0)):
             
 if HW_RGB: # Leds
     # from components.ws_rgb import Rgb
-    from components.ws_rgb import Rgb
-    ws = Rgb(pinout.DEV1_PIN,8)
-    # ws.rainbow_cycle()
-    rgb_fill(ws,(100,0,0))
-    sleep(0.3)
-    rgb_fill(ws,(0,0,0))
+    # ws = Rgb(pinout.DEV1_PIN,8)
+    from components.udi_hw import init_rgb, rgb_fill, show_byte
+    ws = init_rgb(10,16)
+    offset = 8    
+    rgb_fill(ws,offset,(50,0,0))
+    sleep(1)
+    rgb_fill(ws,offset,(0,0,0))
+    
  
 if DISPLAY_LCD4:
     from components.udi_hw import i2c_init, lcd4_init, lcd4_show
@@ -171,9 +173,9 @@ class Executor:
         print(f"|{self.sb}|{self.zb}|0|{self.acb}|0|{self.pb}|1|{self.cb}|")
         print("="*32)
     
-    def print_mem(self):
+    def print_mem(self, r=6):
         print("="*32)
-        hex_dump(self.mem,row=18)
+        hex_dump(self.mem,row=6)
         print("-"*32)
         
     def clear_mem(self):
@@ -498,14 +500,14 @@ class Executor:
             self.set_c(self.a)
             if self.a > 255: self.a -= 256
             self.set_z(self.a)
-            self.pc += 1
+            self.pc += 1        
             
-        if inst=="CPI": ## Compare immediate with A
-            compare  = param - self.a
-            #self.zb = 1 if compare == 0 else 0
+        if inst=="CPI":
+            compare = param - self.a
+            self.zb = 1 if compare == 0 else 0
             self.set_c(compare)
             self.cb = 1 if compare > 0 else 0
-            self.pc += 2
+            self.pc += 2                       
             
         if inst == "RRC": ## Rotate A right (with carry)
             self.cb = self.a & 1
@@ -587,6 +589,9 @@ class Executor:
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
             
+            if HW_RGB:
+                show_byte(ws, self.a)
+            
             if HW_DEBUG and DISPLAY_TM:
                 tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
                 i = 0
@@ -629,7 +634,7 @@ class Executor:
         if inst=="MOV_L,L":
             print("--> spec.sub. - LED_OFF (Low)")
             if HW_LED: led.value(0)
-            if HW_RGB: rgb_fill(ws)
+            
             self.pc += 1
             
         if(True): # /debug
@@ -836,6 +841,19 @@ def print_hex_program(p): # really hex )
     for h in p:
         print(num_to_hex_str2(h),end=" ")
     print()
+    
+
+def convert_hex_to_nums(hex_str):
+    """
+    Converts a string of hex bytes (with spaces, newlines, etc.) 
+    into a list of integers. Example: "2e 00 26" -> [46, 0, 38]
+    """
+    try:
+        # split() handles any whitespace (space, \n, \t) automatically
+        return [int(x, 16) for x in hex_str.split()]
+    except ValueError as e:
+        print(f"Error: Invalid hex data found: {e}")
+        return []
 
 
 @octopus_duration(True)
