@@ -12,6 +12,7 @@ zero_param_instr = {
  'RET','RC','RNC','RZ','RNZ','RP','RM',
  'RPE','RPO','RLC','RRC','RAL','RAR',
  'CMA','STC','CMC','DAA','EI','DI',
+ 'CMP_A','CMP_B','CMP_C','CMP_H','CMP_L','CMP_M',
  'MOV_B,A','MOV_C,A','MOV_L,A','MOV_H,A','MOV_M,A',
  'MOV_A,B','MOV_C,B','MOV_L,B','MOV_H,B','MOV_M,B',
  'MOV_A,C','MOV_B,C','MOV_L,C','MOV_H,C','MOV_M,C','MOV_A,M',

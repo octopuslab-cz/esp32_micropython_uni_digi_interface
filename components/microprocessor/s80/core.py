@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.3" # 2026
+__version__ = "0.3.1" # 2026
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -30,6 +30,7 @@ EXP16_74LS374 = False
 
 HW_DEBUG = False
 DEBUG = False
+DEBUG_PC = True
 
 
 if HW_LED: # Leds
@@ -175,7 +176,7 @@ class Executor:
     
     def print_mem(self, r=6):
         print("="*32)
-        hex_dump(self.mem,row=6)
+        hex_dump(self.mem,row=r)
         print("-"*32)
         
     def clear_mem(self):
@@ -466,13 +467,13 @@ class Executor:
             if self.a > 255: self.a -= 256
             self.set_z(self.a)
             self.pc += 1            # 1 B!
-
-        if inst == "ADI":          # 0xC6 — add param
+               
+        if inst == "ADI":
             self.a = self.a + param
             self.set_c(self.a)
-            if self.a > 255: self.a -= 256
-            self.set_z(self.a)
-            self.pc += 2            # 2 B
+            if self.a > 255: self.a = self.a - 256
+            self.set_z(self.a)    # ← !
+            self.pc += 2            
             
         if inst == "ADD_B":
             self.a += self.b
@@ -500,7 +501,32 @@ class Executor:
             self.set_c(self.a)
             if self.a > 255: self.a -= 256
             self.set_z(self.a)
-            self.pc += 1        
+            self.pc += 1
+            
+        if inst == "CMP_B":
+            result = self.a - self.b
+            self.set_z(result)
+            self.cb = 1 if result < 0 else 0   # C=1 → A < B
+            self.pc += 1    
+            
+        if inst == "CMP_C":
+            result = self.a - self.c
+            self.set_z(result)
+            self.cb = 1 if result < 0 else 0   # C=1 → A < C
+            self.pc += 1    
+            
+        if inst == "CMP_H":
+            result = self.a - self.h
+            self.set_z(result)
+            self.cb = 1 if result < 0 else 0   # C=1 → A < H
+            self.pc += 1
+            
+        if inst == "CMP_L":
+            result = self.a - self.l
+            self.set_z(result)
+            self.cb = 1 if result < 0 else 0   # C=1 → A < L
+            self.pc += 1    
+            
             
         if inst=="CPI":
             compare = param - self.a
@@ -591,6 +617,8 @@ class Executor:
             
             if HW_RGB:
                 show_byte(ws, self.a)
+                show_byte(ws, self.pc, 0)
+                # offset=8, reverse=True, color_on=(0,50,0), color_off=(0,0,0)
             
             if HW_DEBUG and DISPLAY_TM:
                 tm.show2(num_to_hex_str4(self.pc)+"  "+num_to_hex_str2(self.a))
@@ -714,9 +742,10 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
                     
         if len(clean_line) > 0:
             i_pc, i_hex, i_p1, i_p2 = 0,0,"",""
+            parts = clean_line.split(" ")
             for i1 in instr.instructions:
-                if i1 in clean_line:
-                    parts = clean_line.split(" ")
+                 # if i1 in clean_line:
+                 if i1 == parts[0]:
                     print("---parts:",parts)
                     i_pc = get_instr_param(i1)
                     pc += i_pc
@@ -866,6 +895,10 @@ def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
         if run: pc = uP.pc
         instr = opcodes.get(int(instr_set[pc]))
         if DEBUG: print("instr:", instr)
+        if DEBUG_PC:
+            if HW_RGB:
+                show_byte(ws, uP.pc, 0)
+            
         if instr:
             ii = ii + 1
             # try:
