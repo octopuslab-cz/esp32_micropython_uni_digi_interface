@@ -42,27 +42,15 @@ instr = opcodes[0x00] # 'NOP'
 print("instructions revers. (opcode/instr list:")    
 print(instr)
 
-# Test C ?x
-"""
-print("[ --- test C --- ]")
-
-instr_set = [0x3e,0x7,0x0,0x3d,0xc2,0x0,0x3,0x0,0x3e,0x9,0x7,0x7,0x7,]
-# create_hex_program(program, info = True)
-hex_program = create_hex_program(program,prn=False)
-print("- instr_set", instr_set)
-print("len(instr_set):", len(hex_program))
-run_hex_code(instr_set,run_delay_ms=100,run=False)
-print("="*30)
-run_hex_code(instr_set,run_delay_ms=100,run=True)
-print("*"*30)
-"""
 
 # --- 2026 ok
-program = parse_file(uP, "example00_s80.asm") #******* 01,2,3,5,6,7
+program = parse_file(uP, "example03_s80.asm") #******* 01,2,3,5,6,7
+
 hex_program = create_hex_program(program,prn=False)
 
 print("-"*30)
-print("- program_num",hex_program)
+hex_str = " ".join(f"{b:02X}" for b in hex_program)
+print("- program:",hex_str)
 print("-"*30)
 
 print("len(instr_set):", len(hex_program))

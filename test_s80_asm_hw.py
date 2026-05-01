@@ -63,7 +63,7 @@ def run_test(f="example05_s80.asm",asm=""):
         
     print("- len(instr_set):", len(hex_program))
     print("="*32)
-    run_hex_code(uP,hex_program,run_delay_ms=100)
+    run_hex_code(uP,hex_program,run_delay_ms=10)
 
     print()
     print("-"*32)
@@ -84,7 +84,7 @@ asm = """
 ; C = limit (12), A = counter
 ; display A each step, stop when A > C
 ;
-$limit = 6;
+$limit = 255;
 
 start:
     MOV_A,A
@@ -100,6 +100,7 @@ loop:
 ;
 finish:
     MOV_A,A      ; zobraz finální hodnotu
+    JP start
     HLT
 end.
     """

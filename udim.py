@@ -1,8 +1,8 @@
 """
 Universal Digital Interface - Monitor
-(c) 2016-23 OctopusLab
+(c) 2016-26 OctopusLab
 """
-ver = "0.3.1 | 2026-05" # basic - beta
+ver = "0.3.2 | 2026-05" # basic - beta
 
 from time import sleep, sleep_ms
 from universal_digital_interface import Universal_interface
@@ -11,6 +11,8 @@ from octopus_digital import num_to_bin_str8, num_to_bytes2, num_to_hex_str4, num
 from octopus_digital import bin_str_to_int, hex_dump, ascii_table
 from mini_terminal import terminal_info, terminal_color, terminal_clear
 from components.microprocessor.s80.core import __version__, Executor, create_hex_program, print_hex_program, parse_file, run_hex_code
+from components.microprocessor.s80.core import hex_str_to_bytes, print_disasm, disassemble
+
 
 from gc import mem_free
 
@@ -96,7 +98,8 @@ def print_help():
     print(" Copy         C <start> <end> <dest>")
     print(" Dump         D <start>")
     print(" Go           G <address>")
-    print(" Executr      E")
+    print(" Unassemble   U <address>")
+    print(" Execute      E")
     print(" Help         H")
     print(" Clear screen L")
     print(" Info         I")
@@ -166,8 +169,7 @@ while terminal_run:
             d8.show(num_to_hex_str4(addr)+"  "+data8)
   
     if cmd0 == "D":
-        addr = int(cmd1)
-        
+        addr = int(cmd1)        
         for r in range(16):
             print()
             print(num_to_hex_str4(addr+r*16), end="")
@@ -178,6 +180,15 @@ while terminal_run:
                 data8 = num_to_hex_str2(ui.read16d()[1])
                 print(" ", data8, end="")
                 
+    if cmd0.upper() == "U":
+        try:
+            start_addr = int(cmd1, 0)
+        except:
+            start_addr = 0
+        lines = disassemble(vM, start=start_addr)
+        for line in lines[:32]:   # max 32 řádků najednou
+            print(line)
+        
     if cmd0 == "E":
         # Check if there is anything in memory to run
         # We check the first few bytes, or use sum()
