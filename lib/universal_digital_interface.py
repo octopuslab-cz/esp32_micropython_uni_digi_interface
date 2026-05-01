@@ -69,11 +69,12 @@ class Universal_interface:
 
 # -----------------------------------
 def i2c_init(HW_or_SW=0,freq=300000): # 2000000 ok
-    # from utils.pinout import set_pinout
-    # pinout = set_pinout()
-    I2C_SDA_PIN, I2C_SCL_PIN = const(21), const(22)
-    # HW_or_SW: HW 0 | SW 1
-    i2c = I2C(HW_or_SW, scl=Pin(I2C_SCL_PIN), sda=Pin(I2C_SDA_PIN), freq=freq)
+    from utils.pinout import set_pinout
+    pinout = set_pinout()
+    I2C_SDA_PIN, I2C_SCL_PIN = const(0), const(1) # 21,22
+    #HW_or_SW: HW 0 | SW 1
+    #i2c = I2C(HW_or_SW, scl=Pin(I2C_SCL_PIN), sda=Pin(I2C_SDA_PIN), freq=freq)
+    i2c = I2C(HW_or_SW, scl=Pin(pinout.I2C_SCL_PIN), sda=Pin(pinout.I2C_SDA_PIN), freq=freq)    
     return i2c
 
 
