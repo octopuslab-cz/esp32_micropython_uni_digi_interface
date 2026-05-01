@@ -885,6 +885,61 @@ def convert_hex_to_nums(hex_str):
         return []
 
 
+def hex_str_to_bytes(hex_str):
+    """
+    Accept hex string in any of these formats:
+        "00 3E FF C3 00 00"   (space-separated)
+        "003EFFC30000"        (continuous)
+    Returns bytearray.
+    """
+    hex_str = hex_str.replace(" ", "").replace("\n", "").upper()
+    result = bytearray()
+    for j in range(0, len(hex_str), 2):
+        result.append(int(hex_str[j:j+2], 16))
+    return result
+
+
+def disassemble(data, start=0x0000):
+    """
+    Disassemble bytes into 8080/85 assembly lines.
+    data  - bytes, bytearray, or list of ints
+    start - origin address (default 0x0000)
+    Returns a list of strings.
+    Uses 'opcodes' reverse-lookup dict built above.
+    """
+    result = []
+    pc = start
+    i = 0
+    while i < len(data):
+        opcode = data[i]
+        mnem = opcodes.get(opcode, None)
+        addr_str = "{:04X}".format(pc)
+        if mnem is None:
+            result.append("{}: DB {:02X}".format(addr_str, opcode))
+            i += 1
+            pc += 1
+            continue
+        size = get_instr_param(mnem)   # 1, 2, or 3  (from table)
+        if size == 1:
+            result.append("{}: {}".format(addr_str, mnem))
+        elif size == 3:
+            lo = data[i + 1] if i + 1 < len(data) else 0
+            hi = data[i + 2] if i + 2 < len(data) else 0
+            result.append("{}: {} {:04X}".format(addr_str, mnem, (hi << 8) | lo))
+        else:  # size == 2
+            param = data[i + 1] if i + 1 < len(data) else 0
+            result.append("{}: {} {:02X}".format(addr_str, mnem, param))
+        i += size
+        pc += size
+    return result
+
+
+def print_disasm(data, start=0x0000):
+    """Print disassembly to console."""
+    for line in disassemble(data, start):
+        print(line)
+
+
 @octopus_duration(True)
 def run_hex_code(uP, instr_set, run_delay_ms=1, run=True):
     pc, run_code = 0,True
