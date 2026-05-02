@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.3.1" # 2026
+__version__ = "0.3.2" # 2026
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -392,6 +392,44 @@ class Executor:
             self.l = param[0]
             self.h = param[1] 
             self.pc += 3
+
+        if inst == "LXI_D":
+            self.e = param[0]   # lo byte → E
+            self.d = param[1]   # hi byte → D
+            self.pc += 3
+
+        if inst == "INX_D":
+            num = self.e + self.d*256 + 1
+            self.d = num >> 8
+            self.e = num & 0xFF
+            self.pc += 1
+
+        if inst == "DCX_D":
+            num = self.e + self.d*256 - 1
+            self.d = num >> 8
+            self.e = num & 0xFF
+            self.pc += 1
+
+        if inst == "STAX_D":
+            self.mem[self.d*256 + self.e] = self.a
+            self.pc += 1
+
+        if inst == "LDAX_D":
+            self.a = self.mem[self.d*256 + self.e]
+            self.set_z(self.a)
+            self.pc += 1
+
+        if inst == "MOV_D,A":
+            self.d = self.a; self.pc += 1
+
+        if inst == "MOV_E,A":
+            self.e = self.a; self.pc += 1
+
+        if inst == "MOV_A,D":
+            self.a = self.d; self.set_z(self.a); self.pc += 1
+
+        if inst == "MOV_A,E":
+            self.a = self.e; self.set_z(self.a); self.pc += 1 
                        
         if inst=="ANA_A":          # A & A = A  (jen nastaví flagy)
             self.zb = 1 if self.a == 0 else 0
@@ -917,41 +955,33 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
                     i_hex = hex(instr.instructions[i1])
                     #FIX2604: program.append(hex(int(i_hex)))
                     ## program.append(hex(int(i_hex, 16)))
-                    
-                    if i1 =="LDA" or i1 =="STA" or i1 == "LXI_B" or i1 == "LXI_H": # ToDo in list
-                        print("-LD/ST-A-add",parts[1],parts[2])
-                        # program.append(0x0) # simple jmp to (0 addr)
-                        program.append(parts[1])
-                        program.append(parts[2])
-                    else:
+                    if i1 in ("LDA", "STA", "LXI_B", "LXI_H", "LXI_D"):
+                        program.append(instr.instructions[i1])   # opcode
+                        if len(parts) == 2:
+                            # single 16-bit param: LXI_H 0x0050 → lo=0x50, hi=0x00
+                            addr = int(parts[1], 0)
+                            lo = addr & 0xFF
+                            hi = (addr >> 8) & 0xFF
+                            program.append(lo)
+                            program.append(hi)
+                            print("-LXI/LD/ST- 16bit split:", hex(addr), "→ lo:", hex(lo), "hi:", hex(hi))
+                        else:
+                            # dva byty: LXI_H 0x50 0x00
+                            program.append(parts[1])
+                            program.append(parts[2])
+
+                    else:   # ← TATO VĚTEV CHYBÍ — JMP, MVI_C, MOV_A,M, STAX_D, DCR_C...
                         try:
-                            """
-                            #22: JMP 00 01 > 01 / xx addr / 01
-                            #23: JMP 01 00 > 01 / addr xx / addr --- ToDo > 255 program space
-                            if i_pc > 2:                                
-                                ## print("---jmp---add 0x00")
-                                program.append("0x11") # tempor. place for 8080 compatibility
-                                print("--- 23 JMP --- temp ") # third: 11 aa -> aa 00
-                            if i_pc > 1:
-                                i_p1 = parts[1]
-                                #if i_p1+":" in labels
-                                program.append(i_p1)
-                                #23: program.append(0x0)
-                                """
-                            program.append(instr.instructions[i1])  # opcode jako int
-
+                            program.append(instr.instructions[i1])  # opcode
                             if i_pc == 2:
-                                program.append(parts[1])  # immediate
-
+                                program.append(parts[1])             # immediate byte
                             elif i_pc == 3:
-                                program.append(parts[1])  # label / low byte (zatím string)
-                                program.append(0)         # placeholder high byte
-                    
-                        #if i_pc > 2: i_p2 = parts[2]
-                        
+                                program.append(parts[1])             # label / addr lo
+                                program.append(0)                    # placeholder hi
                         except:
                             print("Err. No3")
-                            program.append(0)                
+                            program.append(0)
+                                   
             # find label
             label = "-"
             if line.count(":") == 1:

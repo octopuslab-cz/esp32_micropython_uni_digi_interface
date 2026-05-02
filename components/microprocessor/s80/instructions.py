@@ -144,4 +144,13 @@ instructions = {
 'POP_PSW':  0xF1,
 'SPHL': 0xF9,
 'XTHL': 0xE3,
- }
+'LXI_D':   0x11,
+'INX_D':   0x13,
+'DCX_D':   0x1B,
+'STAX_D':  0x12,
+'LDAX_D':  0x1A,
+'MOV_D,A': 0x57,
+'MOV_E,A': 0x5F, 
+'MOV_A,D': 0x7A,
+'MOV_A,E': 0x7B, 
+}

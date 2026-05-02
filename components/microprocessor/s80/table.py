@@ -26,6 +26,8 @@ zero_param_instr = {
 'XRA_A','XRA_B','XRA_C','XRA_H','XRA_L','XRA_M',
 'ORA_A','ORA_B','ORA_C','ORA_H','ORA_L','ORA_M', 
 'ADD_A','ADD_B','ADD_C','ADD_H','ADD_L','ADD_M',
+'INX_D', 'DCX_D', 'STAX_D', 'LDAX_D',
+'MOV_D,A', 'MOV_E,A', 'MOV_A,D', 'MOV_A,E',
 'PUSH_B','PUSH_D','PUSH_H','PUSH_PSW',
 'POP_B','POP_D','POP_H','POP_PSW',
 'SPHL', 'XTHL'
@@ -36,7 +38,7 @@ zero_param_instr = {
 
 # instr: "address"
 double_param_instr = {
- 'STA','LDA','SHLD','LHLD','LXI_B','LXI_H',
+ 'STA','LDA','SHLD','LHLD','LXI_B','LXI_H','LXI_D',
  'JMP','JC','JNC','JZ','JNZ','JP','JM','JPE','JPO',
  'CALL','CC','CNC','CZ','CNZ','CP','CM','CPE','CPO'
 }
