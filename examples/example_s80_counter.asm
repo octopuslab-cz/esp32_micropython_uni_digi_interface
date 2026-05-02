@@ -11,21 +11,20 @@ MOV_E,E          ; sleep
 MOV_L,L          ; LED LOW / clear
 ;
     JMP start
-; ------------------------------------
-display:         ; HW subroutines
-    MOV_A,A      ; display pc and acc.
+
+display:
+    MOV_A,A
     RET
-; ====================================
+
 start:
     MVI_A 0
 loop:
-    INR_A        ; increment a = a + 1
-    CALL display ; show data
-    CPI 0xFF     ; compare
-    JNC finish   ; is_greater 
+    CALL display  ; zobraz (0..255)
+    ADI 1         ; A = A + 1  (sets Z=1 při přetečení 255→0)
+    JZ finish     ; přeteklo → hotovo
     JMP loop
-;
+
 finish:
-    NOP          ; test
-;
+    HLT
+
 end.

@@ -1,0 +1,266 @@
+- init
+core: ESP mem_free 130352
+core: ESP mem_free 141968
+- instructions revers. (opcode/instr list)
+--- decorator --- @octopus_duration:
+--- decorator --- @octopus_duration:
+------------------------------
+--- start ---
+================================
+[ system registers ]
+a: 0 0x0 00000000
+b: 0  | c: 0
+h: 0  | l: 0
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
+mem_free: 118400
+--- example13_s80.asm ---
+--------------------------------
+
+; example13_s80.asm
+; Nested CALL demo â€” 3 levels deep
+; Function: multiply B * C  â†’ result in A, stored to RAM[0x0103]
+;
+; call stack at deepest point:
+;
+;   main --CALL--–ş multiply          stack: [ retâ†’HLT        ]
+;                    â””-CALL--–ş add_step    stack: [ retâ†’HLT, retâ†’DCR_C   ]
+;                                â””-CALL--–ş save_result
+;                                           stack: [ retâ†’HLT, retâ†’DCR_C, retâ†’RET ]
+;
+; registers:
+;   B = multiplicand  (fixed value, not modified)
+;   C = loop counter  (counts down from multiplier to 0)
+;   A = running total (accumulates B each iteration)
+;   H,L = pointer to result in RAM (set inside save_result)
+
+    JMP start
+
+;----------------------------------------------------
+; LEVEL 3 â€” save running total to RAM[0x0103]
+;           stack depth here: 3
+save_result:
+    MVI_H 0x01
+    MVI_L 0x03
+    MOV_M,A         ; mem[0x0103] = A  (intermediate result)
+    RET
+
+;-----------------------------------------------------
+; LEVEL 2 â€” add B to running total, then save
+;           stack depth here: 2
+add_step:
+    ADD_B           ; A = A + B
+    CALL save_result
+    RET
+
+;-----------------------------------------------------
+; LEVEL 1 â€” loop C times, accumulate B into A
+;           stack depth here: 1
+multiply:
+    MVI_A 0x00      ; running total = 0
+mul_loop:
+    CALL add_step   ; A += B  (and save snapshot to RAM)
+    DCR_C           ; loop counter--
+    JNZ mul_loop    ; repeat until C == 0
+    RET
+
+;-----------------------------------------------------
+start:
+    MVI_B 0x03      ; multiplicand  =  3
+    MVI_C 0x04      ; multiplier    =  4
+    CALL multiply   ; result: A = 3 * 4 = 12 = 0x0C
+    MOV_B,A         ; copy result to B (for display)
+    MOV_A,A         ; [s80 debug hook] print A / B / C + LED
+    HLT
+
+
+--------------------------------
+[ two pass - translator ]
+[---1---] first pass:
+- temp_variables {}
+
+--------------------------------
+[---2---] second pass:
+---parts: ['JMP', 'start']
+0  pc: 3  instr: 0xc3  pc+ 3  p1,p2  
+1  pc: 3  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_H', '0x01']
+2  pc: 5  instr: 0x26  pc+ 2  p1,p2  
+---parts: ['MVI_L', '0x03']
+3  pc: 7  instr: 0x2e  pc+ 2  p1,p2  
+---parts: ['MOV_M,A']
+4  pc: 8  instr: 0x77  pc+ 1  p1,p2  
+---parts: ['RET']
+5  pc: 9  instr: 0xc9  pc+ 1  p1,p2  
+6  pc: 9  instr: 0  pc+ 0  p1,p2  
+---parts: ['ADD_B']
+7  pc: 10  instr: 0x80  pc+ 1  p1,p2  
+---parts: ['CALL', 'save_result']
+8  pc: 13  instr: 0xcd  pc+ 3  p1,p2  
+---parts: ['RET']
+9  pc: 14  instr: 0xc9  pc+ 1  p1,p2  
+10  pc: 14  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_A', '0x00']
+11  pc: 16  instr: 0x3e  pc+ 2  p1,p2  
+12  pc: 16  instr: 0  pc+ 0  p1,p2  
+---parts: ['CALL', 'add_step']
+13  pc: 19  instr: 0xcd  pc+ 3  p1,p2  
+---parts: ['DCR_C']
+14  pc: 20  instr: 0xd  pc+ 1  p1,p2  
+---parts: ['JNZ', 'mul_loop']
+15  pc: 23  instr: 0xc2  pc+ 3  p1,p2  
+---parts: ['RET']
+16  pc: 24  instr: 0xc9  pc+ 1  p1,p2  
+17  pc: 24  instr: 0  pc+ 0  p1,p2  
+---parts: ['MVI_B', '0x03']
+18  pc: 26  instr: 0x6  pc+ 2  p1,p2  
+---parts: ['MVI_C', '0x04']
+19  pc: 28  instr: 0xe  pc+ 2  p1,p2  
+---parts: ['CALL', 'multiply']
+20  pc: 31  instr: 0xcd  pc+ 3  p1,p2  
+---parts: ['MOV_B,A']
+21  pc: 32  instr: 0x47  pc+ 1  p1,p2  
+---parts: ['MOV_A,A']
+22  pc: 33  instr: 0x7f  pc+ 1  p1,p2  
+---parts: ['HLT']
+23  pc: 34  instr: 0x76  pc+ 1  p1,p2  
+- temp_labels: {'': 31, 'add_step:': 9, 'mul_loop:': 16, 'start:': 24, 'save_result:': 3, 'multiply:': 14}
+- temp_prog. : [195, 'start', 0, 38, '0x01', 46, '0x03', 119, 201, 128, 205, 'save_result', 0, 201, 62, '0x00', 205, 'add_step', 0, 13, 194, 'mul_loop', 0, 201, 6, '0x03', 14, '0x04', 205, 'multiply', 0, 71, 127, 118]
+[---3---] third pass:
+- replaces labels with addr.
+---label--- start: 24
+start <--- 24
+---label--- save_result: 3
+save_result <--- 3
+---label--- add_step: 9
+add_step <--- 9
+---label--- mul_loop: 16
+mul_loop <--- 16
+---label--- multiply: 14
+multiply <--- 14
+********************************
+.:. function:  create_hex_program
+--> duration (milis.) --> 1
+------------------------------
+- program_num [195, 24, 0, 38, 1, 46, 3, 119, 201, 128, 205, 3, 0, 201, 62, 0, 205, 9, 0, 13, 194, 16, 0, 201, 6, 3, 14, 4, 205, 14, 0, 71, 127, 118]
+------------------------------
+len(instr_set): 34
+==============================
+1 0 {2} c3   JMP 18 00
+                      --->#1 |S0 Z1 C0| 00000000 | 0, 0x0 24 
+2 24 {1} 06   MVI_B 0x3
+                      --->#2 |S0 Z0 C0| 00000000 | 0, 0x0 26 
+3 26 {1} 0e   MVI_C 0x4
+                      --->#3 |S0 Z0 C0| 00000000 | 0, 0x0 28 
+4 28 {2} cd   CALL 0e 00
+                      --->#4 |S0 Z0 C0| 00000000 | 0, 0x0 14 
+5 14 {1} 3e   MVI_A 0x0
+                      --->#5 |S0 Z1 C0| 00000000 | 0, 0x0 16 
+6 16 {2} cd   CALL 09 00
+                      --->#6 |S0 Z1 C0| 00000000 | 0, 0x0 9 
+7 9 {0} 80   ADD_B
+                      --->#7 |S0 Z0 C0| 00000011 | 3, 0x3 10 
+8 10 {2} cd   CALL 03 00
+                      --->#8 |S0 Z0 C0| 00000011 | 3, 0x3 3 
+9 3 {1} 26   MVI_H 0x1
+                      --->#9 |S0 Z0 C0| 00000011 | 3, 0x3 5 
+10 5 {1} 2e   MVI_L 0x3
+                      --->#10 |S0 Z0 C0| 00000011 | 3, 0x3 7 
+11 7 {0} 77   MOV_M,A
+                      --->#11 |S0 Z0 C0| 00000011 | 3, 0x3 8 
+12 8 {0} c9   RET
+                      --->#12 |S0 Z0 C0| 00000011 | 3, 0x3 13 
+13 13 {0} c9   RET
+                      --->#13 |S0 Z0 C0| 00000011 | 3, 0x3 19 
+14 19 {0} 0d   DCR_C
+                      --->#14 |S0 Z0 C0| 00000011 | 3, 0x3 20 
+15 20 {2} c2   JNZ 10 00
+                      --->#15 |S0 Z0 C0| 00000011 | 3, 0x3 16 
+16 16 {2} cd   CALL 09 00
+                      --->#16 |S0 Z0 C0| 00000011 | 3, 0x3 9 
+17 9 {0} 80   ADD_B
+                      --->#17 |S0 Z0 C0| 00000110 | 6, 0x6 10 
+18 10 {2} cd   CALL 03 00
+                      --->#18 |S0 Z0 C0| 00000110 | 6, 0x6 3 
+19 3 {1} 26   MVI_H 0x1
+                      --->#19 |S0 Z0 C0| 00000110 | 6, 0x6 5 
+20 5 {1} 2e   MVI_L 0x3
+                      --->#20 |S0 Z0 C0| 00000110 | 6, 0x6 7 
+21 7 {0} 77   MOV_M,A
+                      --->#21 |S0 Z0 C0| 00000110 | 6, 0x6 8 
+22 8 {0} c9   RET
+                      --->#22 |S0 Z0 C0| 00000110 | 6, 0x6 13 
+23 13 {0} c9   RET
+                      --->#23 |S0 Z0 C0| 00000110 | 6, 0x6 19 
+24 19 {0} 0d   DCR_C
+                      --->#24 |S0 Z0 C0| 00000110 | 6, 0x6 20 
+25 20 {2} c2   JNZ 10 00
+                      --->#25 |S0 Z0 C0| 00000110 | 6, 0x6 16 
+26 16 {2} cd   CALL 09 00
+                      --->#26 |S0 Z0 C0| 00000110 | 6, 0x6 9 
+27 9 {0} 80   ADD_B
+                      --->#27 |S0 Z0 C0| 00001001 | 9, 0x9 10 
+28 10 {2} cd   CALL 03 00
+                      --->#28 |S0 Z0 C0| 00001001 | 9, 0x9 3 
+29 3 {1} 26   MVI_H 0x1
+                      --->#29 |S0 Z0 C0| 00001001 | 9, 0x9 5 
+30 5 {1} 2e   MVI_L 0x3
+                      --->#30 |S0 Z0 C0| 00001001 | 9, 0x9 7 
+31 7 {0} 77   MOV_M,A
+                      --->#31 |S0 Z0 C0| 00001001 | 9, 0x9 8 
+32 8 {0} c9   RET
+                      --->#32 |S0 Z0 C0| 00001001 | 9, 0x9 13 
+33 13 {0} c9   RET
+                      --->#33 |S0 Z0 C0| 00001001 | 9, 0x9 19 
+34 19 {0} 0d   DCR_C
+                      --->#34 |S0 Z0 C0| 00001001 | 9, 0x9 20 
+35 20 {2} c2   JNZ 10 00
+                      --->#35 |S0 Z0 C0| 00001001 | 9, 0x9 16 
+36 16 {2} cd   CALL 09 00
+                      --->#36 |S0 Z0 C0| 00001001 | 9, 0x9 9 
+37 9 {0} 80   ADD_B
+                      --->#37 |S0 Z0 C0| 00001100 | 12, 0xc 10 
+38 10 {2} cd   CALL 03 00
+                      --->#38 |S0 Z0 C0| 00001100 | 12, 0xc 3 
+39 3 {1} 26   MVI_H 0x1
+                      --->#39 |S0 Z0 C0| 00001100 | 12, 0xc 5 
+40 5 {1} 2e   MVI_L 0x3
+                      --->#40 |S0 Z0 C0| 00001100 | 12, 0xc 7 
+41 7 {0} 77   MOV_M,A
+                      --->#41 |S0 Z0 C0| 00001100 | 12, 0xc 8 
+42 8 {0} c9   RET
+                      --->#42 |S0 Z0 C0| 00001100 | 12, 0xc 13 
+43 13 {0} c9   RET
+                      --->#43 |S0 Z0 C0| 00001100 | 12, 0xc 19 
+44 19 {0} 0d   DCR_C
+                      --->#44 |S0 Z1 C0| 00001100 | 12, 0xc 20 
+45 20 {2} c2   JNZ 10 00
+                      --->#45 |S0 Z1 C0| 00001100 | 12, 0xc 23 
+46 23 {0} c9   RET
+                      --->#46 |S0 Z1 C0| 00001100 | 12, 0xc 31 
+47 31 {0} 47   MOV_B,A
+                      --->#47 |S0 Z1 C0| 00001100 | 12, 0xc 32 
+48 32 {0} 7f   MOV_A,A
+--> R  DEC BIN    HEX (B_C)
+    A:  12 00001100 0c
+    B:  12 00001100 0c  (3072)
+    C:  0 00000000 00  [259]
+                      --->#48 |S0 Z1 C0| 00001100 | 12, 0xc 33 
+49 33 {0} 76   HLT
+                      --->#49 |S0 Z1 C0| 00001100 | 12, 0xc 33 
+.:. function:  run_hex_code
+--> duration (milis.) --> 858
+
+------------------------------
+mem_free: 84880
+================================
+[ system registers ]
+a: 12 0xc 00001100
+b: 12  | c: 0
+h: 1  | l: 3
+--------------------------------
+|S|Z|0|C|0|P|1|C|
+|0|1|0|0|0|0|1|0|
+================================
