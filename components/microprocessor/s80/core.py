@@ -1,5 +1,5 @@
 # octopusLAB - core - simple_80 processor
-__version__ = "0.3.2" # 2026
+__version__ = "0.3.5" # 2026
 
 from time import sleep, sleep_ms
 from utils.octopus_decor import octopus_duration
@@ -144,6 +144,7 @@ class Executor:
         self.cb = 0
         
         self.stack = []
+        self.stack_max = 0
         #self.cycles = 0
         self.loop = 0
         self.is_running = True
@@ -173,6 +174,7 @@ class Executor:
         print("-"*32)
         print("|S|Z|0|C|0|P|1|C|")
         print(f"|{self.sb}|{self.zb}|0|{self.acb}|0|{self.pb}|1|{self.cb}|")
+        print("stack_max: ",self.stack_max)
         print("="*32)
     
     def print_mem(self, r=6):
@@ -643,6 +645,8 @@ class Executor:
             if len(self.stack) < STACK_SIZE:
                 self.stack.append(self.pc + 3)   # uložíme návratovou adresu (za CALL)
                 self.pc = addr
+                if self.stack_max < len(self.stack):
+                    self.stack_max = len(self.stack)
             else:
                 print("STACK OVERFLOW")
                 self.running = False    
@@ -816,7 +820,7 @@ class Executor:
             print("    A: ", self.a, num_to_bin_str8(self.a), num_to_hex_str2(self.a))
             print("    B: ", self.b, num_to_bin_str8(self.b), num_to_hex_str2(self.b), " ("+str(num_bc)+")")
             print("    C: ", self.c, num_to_bin_str8(self.c), num_to_hex_str2(self.c), " ["+str(num_lh)+"]")
-            
+                        
             if HW_RGB:
                 show_byte(ws, self.a)
                 show_byte(ws, self.pc, 0)
