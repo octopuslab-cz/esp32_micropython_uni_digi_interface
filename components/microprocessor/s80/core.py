@@ -862,7 +862,8 @@ def parse_file(uP, file_name="", asm="",print_asm=True, debug = True):
         clean_line = line.split(";")[0].strip()
         
         # data_string
-        index_vm = 256  # start data virtual memory FF+1
+        #index_vm = 256  # start data virtual memory FF+1
+        index_vm = 0x0050
         if clean_line.count("#DATA"): 
             parts = clean_line.split("=")
             data_string=parts[1].strip().replace('"','')
