@@ -19,6 +19,7 @@ gc.collect()
 print("core: ESP mem_free",gc.mem_free())
 
 MEM_MAX = 300
+STACK_SIZE = 16  # max 16 úrovní vnoření
 
 # Hw components:
 HW_LED = False
@@ -142,7 +143,7 @@ class Executor:
         self.pb = 0
         self.cb = 0
         
-        #self.stack = []
+        self.stack = []
         #self.cycles = 0
         self.loop = 0
         self.is_running = True
@@ -391,6 +392,11 @@ class Executor:
             self.l = param[0]
             self.h = param[1] 
             self.pc += 3
+                       
+        if inst=="ANA_A":          # A & A = A  (jen nastaví flagy)
+            self.zb = 1 if self.a == 0 else 0
+            self.cb = 0
+            self.pc += 1
             
         if inst=="ANA_B": ## AND register with A
             self.a = self.a & self.b
@@ -398,11 +404,26 @@ class Executor:
             self.pc += 1
             
         if inst=="ANA_C":
-#           # print(self.c , self.a & self.c)
+            # print(self.c , self.a & self.c)
             self.a = self.a & self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1    
-            
+
+        if inst=="ANA_H":
+            self.a &= self.h
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+
+        if inst=="ANA_L":
+            self.a &= self.l
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+
+        if inst=="ANA_M":
+            self.a &= self.mem[self.h*256 + self.l]
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+                        
         if inst=="ORA_B": ## OR register with A
             self.a = self.a | self.b
             self.zb = 1 if self.a == 0 else 0
@@ -412,6 +433,27 @@ class Executor:
             self.a = self.a | self.c
             self.zb = 1 if self.a == 0 else 0
             self.pc += 1
+            
+        if inst=="XRA_A":          # A ^ A = 0  (klasické vynulování A)
+            self.a = 0
+            self.cb = 0
+            self.zb = 1
+            self.pc += 1
+
+        if inst=="XRA_H":
+            self.a ^= self.h
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+
+        if inst=="XRA_L":
+            self.a ^= self.l
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1
+
+        if inst=="XRA_M":
+            self.a ^= self.mem[self.h*256 + self.l]
+            self.zb = 1 if self.a == 0 else 0
+            self.pc += 1    
             
         if inst=="XRA_B": ## ExclusiveOR register with A
             self.a = self.a ^ self.b
@@ -554,14 +596,35 @@ class Executor:
             if(self.debug):print("> JMP to ",self.pc)
                         
         if inst=="CALL": ## Unconditional subroutine call
+            """ old:
             self.sp = self.pc + 3 # stack
             self.pc = param[0]+param[1]*256
             if(self.debug): print("> CALL from",self.sp,"to",self.pc)
+            """
+            addr = self.mem[self.pc+1] + self.mem[self.pc+2] * 256
+            if len(self.stack) < STACK_SIZE:
+                self.stack.append(self.pc + 3)   # uložíme návratovou adresu (za CALL)
+                self.pc = addr
+            else:
+                print("STACK OVERFLOW")
+                self.running = False    
+            
                      
         if inst=="RET": ##  Unconditional return from subroutine
+            """ old:
             self.pc = self.sp # stack
             if(self.debug): print("> RET to ",self.pc)
             self.sp = 0
+            """  
+  
+            if self.stack and isinstance(self.stack[-1], int):
+                self.pc = self.stack.pop()
+                if self.debug: print("> RET to", self.pc)
+            else:
+                print("STACK UNDERFLOW / expected return address")
+                self.running = False    
+            
+            
             
         if inst=="JNZ": ## Conditional jump / not zerro
             if self.zb == 0:
@@ -590,6 +653,107 @@ class Executor:
                 if(self.debug): print("> jump to ",self.pc)
             else:
                 self.pc += 3
+                
+                
+        # PUSH_B  → push B,C pair    (opcode 0xC5)
+        # PUSH_D  → push D,E pair    (opcode 0xD5)
+        # PUSH_H  → push H,L pair    (opcode 0xE5)
+        # PUSH_PSW→ push A + flags   (opcode 0xF5)
+
+        if inst == "PUSH_B":
+            if len(self.stack) < STACK_SIZE:
+                self.stack.append((self.b, self.c))
+                self.pc += 1
+            else:
+                print("STACK OVERFLOW"); self.running = False
+
+        if inst == "PUSH_D":
+            if len(self.stack) < STACK_SIZE:
+                self.stack.append((self.d, self.e))
+                self.pc += 1
+            else:
+                print("STACK OVERFLOW"); self.running = False
+
+        if inst == "PUSH_H":
+            if len(self.stack) < STACK_SIZE:
+                self.stack.append((self.h, self.l))
+                self.pc += 1
+            else:
+                print("STACK OVERFLOW"); self.running = False
+
+        if inst == "PUSH_PSW":
+            # flags packed into one byte: bit7=S bit6=Z bit2=AC bit0=CY
+            flags = (self.sb << 7) | (self.zb << 6) | (self.acb << 2) | self.cb
+            if len(self.stack) < STACK_SIZE:
+                self.stack.append((self.a, flags))
+                self.pc += 1
+            else:
+                print("STACK OVERFLOW"); self.running = False
+
+        # --- POP rp ---
+
+        if inst == "POP_B":
+            if self.stack and isinstance(self.stack[-1], tuple):
+                self.b, self.c = self.stack.pop()
+                self.pc += 1
+            else:
+                print("STACK UNDERFLOW / TYPE MISMATCH"); self.running = False
+
+        if inst == "POP_D":
+            if self.stack and isinstance(self.stack[-1], tuple):
+                self.d, self.e = self.stack.pop()
+                self.pc += 1
+            else:
+                print("STACK UNDERFLOW / TYPE MISMATCH"); self.running = False
+
+        if inst == "POP_H":
+            if self.stack and isinstance(self.stack[-1], tuple):
+                self.h, self.l = self.stack.pop()
+                self.pc += 1
+            else:
+                print("STACK UNDERFLOW / TYPE MISMATCH"); self.running = False
+
+        if inst == "POP_PSW":
+            if self.stack and isinstance(self.stack[-1], tuple):
+                self.a, flags = self.stack.pop()
+                self.sb  = (flags >> 7) & 1
+                self.zb  = (flags >> 6) & 1
+                self.acb = (flags >> 2) & 1
+                self.cb  =  flags       & 1
+                self.pc += 1
+            else:
+                print("STACK UNDERFLOW / TYPE MISMATCH"); self.running = False
+                
+                
+        # --- SPHL (0xF9) ---
+        # Load SP from HL — in s80: truncates stack to depth given by L
+        # (H is ignored; max depth is STACK_SIZE so L is clamped)
+
+        if inst == "SPHL":
+            depth = min(self.l, len(self.stack))
+            self.stack = self.stack[:depth]
+            self.pc += 1
+
+        # --- XTHL (0xE3) ---
+        # Exchange HL with top of stack
+        # handles both tuple (PUSH_H) and int (CALL return address)
+
+        if inst == "XTHL":
+            if not self.stack:
+                print("STACK EMPTY"); self.running = False
+            else:
+                top = self.stack[-1]
+                if isinstance(top, tuple):
+                    # top is a register pair → swap with H, L
+                    self.stack[-1] = (self.h, self.l)
+                    self.h, self.l = top
+                else:
+                    # top is a CALL return address (int) → treat HL as 16-bit addr
+                    self.stack[-1] = self.h * 256 + self.l
+                    self.h = top >> 8
+                    self.l = top & 0xFF
+                self.pc += 1
+                
                 
         # ------------- spec subroutines --------
         if inst=="OUT":
